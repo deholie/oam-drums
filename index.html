@@ -286,3 +286,397 @@
                         playerView.classList.remove('hidden');
                         resetFileBtn.classList.remove('hidden');
                         showMetadataModal(detectedMetadata);
+                    }, 800);
+
+                } catch (err) {
+                    console.error(err);
+                    loadingView.classList.add('hidden');
+                    dropZone.classList.remove('hidden');
+                    alert('Fehler beim Verarbeiten der PDF.');
+                }
+            };
+        }
+
+        function showMetadataModal(meta) {
+            document.getElementById('detectedBpmText').textContent = `${meta.bpm} BPM`;
+            document.getElementById('detectedTimeSigText').textContent = meta.timeSig;
+            document.getElementById('detectedMeasuresText').textContent = `${meta.totalMeasures} Takte`;
+            
+            const msgEl = document.getElementById('drumTrackDetectedMsg');
+            if (meta.hasDrumStaff) {
+                msgEl.innerHTML = '🥁 <strong>Schlagzeug-Spur erkannt:</strong> Die Noten und Taktstruktur wurden erfolgreich übernommen.';
+            } else {
+                msgEl.innerHTML = '🎼 <strong>Notenblatt erkannt:</strong> Standard-Groove und Songstruktur wurden generiert.';
+            }
+
+            metadataModal.classList.remove('hidden');
+        }
+
+        document.getElementById('applyMetaBtn').addEventListener('click', () => {
+            document.getElementById('bpmInput').value = detectedMetadata.bpm;
+            document.getElementById('timeSig').value = detectedMetadata.timeSig;
+            songData.bpm = detectedMetadata.bpm;
+            songData.timeSignature = detectedMetadata.timeSig;
+            buildSongArrangement(detectedMetadata);
+            updateUIStats();
+            metadataModal.classList.add('hidden');
+        });
+
+        document.getElementById('ignoreMetaBtn').addEventListener('click', () => {
+            songData.bpm = parseInt(document.getElementById('bpmInput').value) || 120;
+            songData.timeSignature = document.getElementById('timeSig').value;
+            buildSongArrangement({
+                ...detectedMetadata,
+                bpm: songData.bpm,
+                timeSig: songData.timeSignature
+            });
+            updateUIStats();
+            metadataModal.classList.add('hidden');
+        });
+
+        function buildSongArrangement(meta) {
+            songData.totalMeasures = meta.totalMeasures;
+            songData.timeSignature = meta.timeSig;
+            songData.measures = [];
+
+            const subs = meta.timeSig === '3/4' ? 6 : (meta.timeSig === '6/8' ? 6 : 8);
+
+            for (let m = 0; m < meta.totalMeasures; m++) {
+                let steps = [];
+                const isFirst = (m === 0);
+                const isLast = (m === meta.totalMeasures - 1);
+                const isFill = ((m + 1) % 8 === 0 && !isLast);
+                const isNewSection = (m > 0 && m % 8 === 0);
+
+                for (let s = 0; s < subs; s++) {
+                    let kick = false, snare = false, hat = false, crash = false, tom = false;
+
+                    if (isLast) {
+                        if (s === 0) { kick = true; crash = true; }
+                    } else if (meta.timeSig === '4/4') {
+                        if ((isFirst || isNewSection) && s === 0) crash = true;
+                        if (!isFill || s < 4) hat = true;
+                        if (s === 0 || s === 4) kick = true;
+                        if (s === 2 || s === 6) snare = true;
+                        if (isFill && s >= 4) {
+                            if (s === 4 || s === 5) snare = true;
+                            if (s === 6 || s === 7) tom = true;
+                        }
+                    } else if (meta.timeSig === '3/4') {
+                        if ((isFirst || isNewSection) && s === 0) crash = true;
+                        hat = true;
+                        if (s === 0) kick = true;
+                        if (s === 2 || s === 4) snare = true;
+                    } else if (meta.timeSig === '6/8') {
+                        if ((isFirst || isNewSection) && s === 0) crash = true;
+                        hat = true;
+                        if (s === 0 || s === 3) kick = true;
+                        if (s === 3) snare = true;
+                    }
+                    steps.push({ kick, snare, hat, crash, tom });
+                }
+                songData.measures.push(steps);
+            }
+            updateUIStats();
+        }
+
+        function updateUIStats() {
+            const startM = parseInt(document.getElementById('startMeasure').value) || 1;
+            document.getElementById('currentMeasureDisplay').textContent = Math.min(startM, songData.totalMeasures);
+            document.getElementById('totalMeasuresDisplay').textContent = songData.totalMeasures;
+            document.getElementById('songProgressBar').style.width = '0%';
+            renderBeatDots();
+        }
+
+        function renderBeatDots(activeBeat = -1, isCountIn = false) {
+            const container = document.getElementById('beatDots');
+            const timeSig = document.getElementById('timeSig').value;
+            const beats = timeSig === '3/4' ? 3 : (timeSig === '6/8' ? 6 : 4);
+            container.innerHTML = '';
+
+            for (let i = 0; i < beats; i++) {
+                const dot = document.createElement('div');
+                let cls = 'w-3.5 h-3.5 rounded-full transition-all duration-75 ';
+                if (i === activeBeat) {
+                    cls += isCountIn ? 'bg-amber-400 scale-125 shadow-md shadow-amber-400/50' : 'bg-rose-500 scale-125 shadow-md shadow-rose-500/50';
+                } else {
+                    cls += 'bg-slate-700';
+                }
+                dot.className = cls;
+                container.appendChild(dot);
+            }
+        }
+
+        resetFileBtn.addEventListener('click', () => {
+            stopAudio();
+            playerView.classList.add('hidden');
+            resetFileBtn.classList.add('hidden');
+            dropZone.classList.remove('hidden');
+            fileInput.value = '';
+        });
+
+        // --- AKUSTIK DRUM SYNTHESIZER & REVERB ---
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                createRoomReverb();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function createRoomReverb() {
+            const length = audioCtx.sampleRate * 0.4;
+            const impulse = audioCtx.createBuffer(2, length, audioCtx.sampleRate);
+            for (let c = 0; c < 2; c++) {
+                const data = impulse.getChannelData(c);
+                for (let i = 0; i < length; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 3);
+                }
+            }
+            reverbNode = audioCtx.createConvolver();
+            reverbNode.buffer = impulse;
+        }
+
+        function connectWithRoom(source, dryVal) {
+            const dry = audioCtx.createGain();
+            dry.gain.value = dryVal;
+            source.connect(dry);
+            dry.connect(audioCtx.destination);
+
+            const roomVol = parseFloat(document.getElementById('volRoom').value) * 0.3;
+            if (reverbNode && roomVol > 0) {
+                const wet = audioCtx.createGain();
+                wet.gain.value = dryVal * roomVol;
+                source.connect(reverbNode);
+                reverbNode.connect(wet);
+                wet.connect(audioCtx.destination);
+            }
+        }
+
+        function playKick(vol) {
+            if (vol <= 0) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(140, t);
+            osc.frequency.exponentialRampToValueAtTime(40, t + 0.12);
+            gain.gain.setValueAtTime(vol, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+            osc.connect(gain);
+            connectWithRoom(gain, 1.0);
+            osc.start(t);
+            osc.stop(t + 0.25);
+        }
+
+        function playSnare(vol) {
+            if (vol <= 0) return;
+            const t = audioCtx.currentTime;
+            // Kessel
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(180, t);
+            osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
+            gain.gain.setValueAtTime(vol * 0.4, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+            osc.connect(gain);
+            connectWithRoom(gain, 0.8);
+            osc.start(t);
+            osc.stop(t + 0.12);
+
+            // Teppich Rauschen
+            const bufSize = audioCtx.sampleRate * 0.18;
+            const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buf;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 1600;
+            const nGain = audioCtx.createGain();
+            nGain.gain.setValueAtTime(vol * 0.7, t);
+            nGain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+            noise.connect(filter);
+            filter.connect(nGain);
+            connectWithRoom(nGain, 0.9);
+            noise.start(t);
+        }
+
+        function playTom(vol) {
+            if (vol <= 0) return;
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(150, t);
+            osc.frequency.exponentialRampToValueAtTime(70, t + 0.2);
+            gain.gain.setValueAtTime(vol * 0.8, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+            osc.connect(gain);
+            connectWithRoom(gain, 1.0);
+            osc.start(t);
+            osc.stop(t + 0.22);
+        }
+
+        function playCymbal(vol, dur, hpFreq) {
+            if (vol <= 0) return;
+            const t = audioCtx.currentTime;
+            const ratios = [263, 400, 474, 587, 845];
+            const bp = audioCtx.createBiquadFilter();
+            bp.type = 'bandpass';
+            bp.frequency.value = 8000;
+            const hp = audioCtx.createBiquadFilter();
+            hp.type = 'highpass';
+            hp.frequency.value = hpFreq;
+            const master = audioCtx.createGain();
+            master.gain.setValueAtTime(vol * 0.35, t);
+            master.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+
+            ratios.forEach(f => {
+                const osc = audioCtx.createOscillator();
+                osc.type = 'square';
+                osc.frequency.value = f;
+                osc.connect(bp);
+                osc.start(t);
+                osc.stop(t + dur);
+            });
+            bp.connect(hp);
+            hp.connect(master);
+            connectWithRoom(master, 0.9);
+        }
+
+        function playHiHat(vol) { playCymbal(vol, 0.05, 6500); }
+        function playCrash(vol) { playCymbal(vol * 1.2, 1.2, 4000); }
+
+        function playMetronomeClick(isHigh) {
+            const t = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(isHigh ? 1300 : 900, t);
+            gain.gain.setValueAtTime(0.6, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(t);
+            osc.stop(t + 0.04);
+        }
+
+        // --- PLAYBACK & SONG ENDE LOGIK ---
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                stopAudio();
+            } else {
+                startPlayback();
+            }
+        });
+
+        function stopAudio(finishedNaturally = false) {
+            isPlaying = false;
+            if (timerID) clearInterval(timerID);
+            playBtn.textContent = '▶';
+            playBtn.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+            playBtn.classList.add('bg-rose-600', 'hover:bg-rose-500');
+            renderBeatDots(-1);
+
+            const badge = document.getElementById('statusBadge');
+            if (finishedNaturally) {
+                badge.textContent = 'Song beendet';
+                badge.className = 'bg-sky-500/10 text-sky-400 border border-sky-500/30 text-xs px-3 py-1 rounded-full font-semibold';
+                document.getElementById('songProgressBar').style.width = '100%';
+            } else {
+                badge.textContent = 'Gestoppt';
+                badge.className = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-semibold';
+            }
+        }
+
+        function startPlayback() {
+            initAudio();
+            isPlaying = true;
+            playBtn.textContent = '⏹';
+            playBtn.classList.remove('bg-rose-600', 'hover:bg-rose-500');
+            playBtn.classList.add('bg-amber-600', 'hover:bg-amber-500');
+
+            const bpm = parseInt(document.getElementById('bpmInput').value) || 120;
+            const timeSig = document.getElementById('timeSig').value;
+            let startMeas = parseInt(document.getElementById('startMeasure').value) || 1;
+            if (startMeas < 1) startMeas = 1;
+            if (startMeas > songData.totalMeasures) startMeas = songData.totalMeasures;
+
+            const beatsPerMeasure = timeSig === '3/4' ? 3 : (timeSig === '6/8' ? 6 : 4);
+            const subsPerBeat = timeSig === '6/8' ? 1 : 2;
+            const intervalMs = (60 / bpm / subsPerBeat) * 1000;
+
+            let currentMeasureIdx = startMeas - 1;
+            let currentSubStep = 0;
+
+            let countInStep = 0;
+            const totalCountIn = beatsPerMeasure * subsPerBeat;
+
+            const badge = document.getElementById('statusBadge');
+            badge.textContent = 'Vorzählen...';
+            badge.className = 'bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-3 py-1 rounded-full font-semibold';
+
+            timerID = setInterval(() => {
+                if (!isPlaying) return;
+
+                // 1. VORZÄHL-PHASE
+                if (countInStep < totalCountIn) {
+                    if (countInStep % subsPerBeat === 0) {
+                        const beat = Math.floor(countInStep / subsPerBeat);
+                        playMetronomeClick(beat === 0);
+                        renderBeatDots(beat, true);
+                    }
+                    countInStep++;
+                    return;
+                }
+
+                // 2. SONG-ENDE PRÜFUNG
+                if (currentMeasureIdx >= songData.totalMeasures) {
+                    stopAudio(true);
+                    return;
+                }
+
+                if (currentSubStep === 0) {
+                    badge.textContent = 'Live Playing';
+                    badge.className = 'bg-rose-500/10 text-rose-400 border border-rose-500/30 text-xs px-3 py-1 rounded-full font-semibold';
+                    document.getElementById('currentMeasureDisplay').textContent = currentMeasureIdx + 1;
+                    const progress = ((currentMeasureIdx + 1) / songData.totalMeasures) * 100;
+                    document.getElementById('songProgressBar').style.width = `${progress}%`;
+                }
+
+                if (currentSubStep % subsPerBeat === 0) {
+                    const beat = Math.floor(currentSubStep / subsPerBeat);
+                    renderBeatDots(beat, false);
+                }
+
+                const measureSteps = songData.measures[currentMeasureIdx];
+                if (measureSteps && measureSteps[currentSubStep]) {
+                    const step = measureSteps[currentSubStep];
+                    const vKick = parseFloat(document.getElementById('volKick').value);
+                    const vSnare = parseFloat(document.getElementById('volSnare').value);
+                    const vHat = parseFloat(document.getElementById('volHat').value);
+
+                    if (step.kick) playKick(vKick);
+                    if (step.snare) playSnare(vSnare);
+                    if (step.tom) playTom(vSnare);
+                    if (step.hat) playHiHat(vHat);
+                    if (step.crash) playCrash(vHat);
+                }
+
+                currentSubStep++;
+                if (currentSubStep >= measureSteps.length) {
+                    currentSubStep = 0;
+                    currentMeasureIdx++;
+
+                    if (currentMeasureIdx >= songData.totalMeasures) {
+                        setTimeout(() => stopAudio(true), intervalMs * 2);
+                    }
+                }
+            }, intervalMs);
+        }
+    </script>
+</body>
+</html>
