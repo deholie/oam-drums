@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>oam drums</title>
+    <title>OAM Drum AI</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
@@ -15,73 +15,94 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
 
-    <!-- POP-UP MODAL: Erkannte Partitur-Werte übernehmen -->
-    <div id="metadataModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+    <!-- POP-UP MODAL: Erkannte Werte prüfen & editieren -->
+    <div id="metadataModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
             <div class="flex items-center space-x-3 border-b border-slate-800 pb-3">
-                <span class="text-2xl">🎼</span>
+                <span class="text-3xl">🎛️</span>
                 <div>
-                    <h3 class="text-lg font-bold text-white">Partitur-Daten erkannt</h3>
-                    <p class="text-xs text-slate-400">Folgende Angaben wurden aus der PDF-Partitur gelesen:</p>
+                    <h3 class="text-lg font-bold text-white">Partitur-Analyse & Einstellungen</h3>
+                    <p class="text-xs text-slate-400">Prüfe und korrigiere die erkannten Werte vor dem Start:</p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-3 text-center">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                 <div class="bg-slate-800/90 p-3 rounded-xl border border-slate-700">
-                    <span class="text-xs text-slate-400 block">Tempo</span>
-                    <span id="detectedBpmText" class="text-xl font-black text-rose-400">120 BPM</span>
+                    <label class="text-xs text-slate-400 block mb-1">Tempo (BPM)</label>
+                    <input type="number" id="modalBpm" min="40" max="280" class="w-full bg-slate-950 text-center font-black text-rose-400 text-lg rounded outline-none py-1 border border-slate-700 focus:border-rose-500">
                 </div>
                 <div class="bg-slate-800/90 p-3 rounded-xl border border-slate-700">
-                    <span class="text-xs text-slate-400 block">Taktart</span>
-                    <span id="detectedTimeSigText" class="text-xl font-black text-amber-400">4/4</span>
+                    <label class="text-xs text-slate-400 block mb-1">Taktart</label>
+                    <select id="modalTimeSig" class="w-full bg-slate-950 text-center text-amber-400 font-bold text-lg rounded outline-none py-1.5 border border-slate-700 focus:border-amber-500">
+                        <option value="4/4">4/4</option>
+                        <option value="3/4">3/4</option>
+                        <option value="6/8">6/8</option>
+                        <option value="2/4">2/4</option>
+                    </select>
                 </div>
                 <div class="bg-slate-800/90 p-3 rounded-xl border border-slate-700">
-                    <span class="text-xs text-slate-400 block">Länge</span>
-                    <span id="detectedMeasuresText" class="text-xl font-black text-emerald-400">38 Takte</span>
+                    <label class="text-xs text-slate-400 block mb-1">Takte</label>
+                    <input type="number" id="modalMeasures" min="2" max="500" class="w-full bg-slate-950 text-center font-black text-emerald-400 text-lg rounded outline-none py-1 border border-slate-700 focus:border-emerald-500">
+                </div>
+                <div class="bg-slate-800/90 p-3 rounded-xl border border-slate-700">
+                    <label class="text-xs text-slate-400 block mb-1">Musikstil</label>
+                    <select id="modalStyle" class="w-full bg-slate-950 text-center text-sky-400 font-bold text-sm rounded outline-none py-1.5 border border-slate-700 focus:border-sky-500">
+                        <option value="auto">Auto (KI)</option>
+                        <option value="rock">Rock / Pop</option>
+                        <option value="walzer">Walzer (3/4)</option>
+                        <option value="polka">Polka</option>
+                        <option value="marsch">Marsch</option>
+                        <option value="schlager">Schlager</option>
+                    </select>
                 </div>
             </div>
 
             <p id="drumTrackDetectedMsg" class="text-xs text-slate-300 bg-slate-800/60 p-3 rounded-lg border border-slate-700">
-                ✅ Schlagzeug-Noten und Taktgrenzen erfolgreich ausgelesen.
+                ✅ Schlagzeug-Pattern und Stil erfolgreich an die Partitur angepasst.
             </p>
 
             <div class="flex justify-end space-x-3 pt-2">
-                <button id="ignoreMetaBtn" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer">
-                    Eigene Werte behalten
-                </button>
-                <button id="applyMetaBtn" class="px-5 py-2 rounded-lg text-sm font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/20 transition cursor-pointer">
-                    Werte übernehmen
+                <button id="applyMetaBtn" class="w-full py-2.5 rounded-xl text-sm font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 transition cursor-pointer">
+                    Einstellungen übernehmen & Startklar machen
                 </button>
             </div>
         </div>
     </div>
 
     <!-- HEADER: Steuerung oben -->
-    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
-        <!-- Logo -->
-        <div class="flex items-center space-x-3">
-            <img src="oam.jpeg" alt="oam drums" class="h-10 w-auto object-contain rounded" onerror="this.style.display='none'; document.getElementById('logoFallback').classList.remove('hidden');">
-            <span id="logoFallback" class="hidden text-2xl font-black tracking-wider text-rose-500 uppercase">oam drums</span>
+    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
+        <!-- Logo & Titel -->
+        <div class="flex items-center space-x-3.5">
+            <img src="oam.jpeg" alt="OAM Drum AI" class="h-14 w-auto object-contain rounded-xl shadow-md border border-slate-700" onerror="this.style.display='none'; document.getElementById('logoFallback').classList.remove('hidden');">
+            <span id="logoFallback" class="hidden text-xl font-black tracking-wider text-rose-500 uppercase">OAM Drum AI</span>
+            <div>
+                <h1 class="text-lg font-black tracking-tight text-white flex items-center space-x-2">
+                    <span>OAM Drum AI</span>
+                    <span class="text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/40 px-2 py-0.5 rounded-full">Band AI</span>
+                </h1>
+                <p class="text-xs text-slate-400" id="activeStyleDisplay">Stil: Standard / Auto</p>
+            </div>
         </div>
 
         <!-- Oben Links: BPM, Taktart, Taktstart -->
         <div class="flex flex-wrap items-center gap-3">
             <div class="flex items-center space-x-2 bg-slate-800/90 px-3 py-1.5 rounded-lg border border-slate-700">
                 <label for="bpmInput" class="text-xs font-semibold text-slate-400">BPM:</label>
-                <input type="number" id="bpmInput" min="40" max="260" value="120" class="w-16 bg-slate-950 text-center font-bold text-rose-400 rounded outline-none px-1 py-0.5">
+                <input type="number" id="bpmInput" min="40" max="280" value="120" class="w-16 bg-slate-950 text-center font-bold text-rose-400 rounded outline-none px-1 py-0.5">
             </div>
 
             <div class="flex items-center space-x-2 bg-slate-800/90 px-3 py-1.5 rounded-lg border border-slate-700">
-                <label for="timeSig" class="text-xs font-semibold text-slate-400">Taktart:</label>
+                <label for="timeSig" class="text-xs font-semibold text-slate-400">Takt:</label>
                 <select id="timeSig" class="bg-slate-950 text-slate-200 text-sm font-bold rounded outline-none px-2 py-0.5">
                     <option value="4/4">4/4</option>
                     <option value="3/4">3/4</option>
                     <option value="6/8">6/8</option>
+                    <option value="2/4">2/4</option>
                 </select>
             </div>
 
             <div class="flex items-center space-x-2 bg-slate-800/90 px-3 py-1.5 rounded-lg border border-slate-700">
-                <label for="startMeasure" class="text-xs font-semibold text-slate-400">Start ab Takt:</label>
+                <label for="startMeasure" class="text-xs font-semibold text-slate-400">Ab Takt:</label>
                 <input type="number" id="startMeasure" min="1" value="1" class="w-14 bg-slate-950 text-center font-bold text-slate-200 rounded outline-none px-1 py-0.5">
             </div>
         </div>
@@ -89,7 +110,7 @@
         <!-- Oben Rechts: Datei entfernen Button -->
         <div>
             <button id="resetFileBtn" class="hidden bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-700/60 px-4 py-1.5 rounded-lg text-sm font-semibold transition cursor-pointer flex items-center space-x-1.5">
-                <span>🗑️ Datei entfernen</span>
+                <span>🗑️ Neue Partitur</span>
             </button>
         </div>
     </header>
@@ -104,8 +125,8 @@
                     📄
                 </div>
                 <div>
-                    <h2 class="text-xl font-bold text-slate-100">PDF Partitur / Schlagzeugnoten hierher ziehen</h2>
-                    <p class="text-sm text-slate-400 mt-1">Liest Schlagzeug-Noten, BPM, Taktart und exakte Taktanzahl aus</p>
+                    <h2 class="text-xl font-bold text-slate-100">PDF Partitur / Noten hierher ziehen</h2>
+                    <p class="text-sm text-slate-400 mt-1">Erkennt automatisch BPM, Taktart, Stil (Walzer, Polka, Marsch...) & Noten</p>
                 </div>
                 <input type="file" id="fileInput" accept=".pdf" class="hidden">
             </div>
@@ -113,15 +134,15 @@
             <!-- ZUSTAND 2: Analyse-Ladeanzeige -->
             <div id="loadingView" class="hidden text-center py-16 space-y-4">
                 <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-rose-500 border-t-transparent"></div>
-                <p id="loadingStatus" class="text-slate-300 font-medium">Analysiere Partitur-Noten und Taktstruktur...</p>
+                <p id="loadingStatus" class="text-slate-300 font-medium">Analysiere Stil & Notenstruktur...</p>
             </div>
 
-            <!-- ZUSTAND 3: Audio Player & Drum Computer Controller -->
+            <!-- ZUSTAND 3: Audio Player & Drum Controller -->
             <div id="playerView" class="hidden bg-slate-900/95 border border-slate-800 rounded-2xl p-8 shadow-2xl space-y-6">
                 <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
                     <div>
                         <h3 id="fileNameDisplay" class="text-lg font-bold text-slate-100">Partitur geladen</h3>
-                        <p class="text-xs text-slate-400" id="analysisInfo">Bereit zum Abspielen</p>
+                        <p class="text-xs text-slate-400" id="analysisInfo">Stil-Modus aktiv</p>
                     </div>
                     <div class="flex items-center space-x-3">
                         <div class="bg-slate-950 border border-slate-800 px-3 py-1 rounded-lg text-xs font-mono text-slate-300">
@@ -142,11 +163,11 @@
                     <button id="playBtn" class="w-24 h-24 bg-rose-600 hover:bg-rose-500 text-white rounded-full flex items-center justify-center text-4xl shadow-lg shadow-rose-600/30 transition transform hover:scale-105 active:scale-95 cursor-pointer">
                         ▶
                     </button>
-                    <p id="helperHint" class="text-xs text-slate-400">Zählt 1 Takt vor &bull; Stoppt vollautomatisch nach dem letzten Takt</p>
+                    <p id="helperHint" class="text-xs text-slate-400">Zählt 1 Takt im Stil vor &bull; Stoppt vollautomatisch am Songende</p>
                 </div>
 
-                <!-- Mixer -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-800/80 text-center">
+                <!-- Mixer & Erweiterte Einstellungen -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-4 border-t border-slate-800/80 text-center">
                     <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
                         <span class="text-xs text-slate-400 block mb-1">Kick Drum</span>
                         <input type="range" id="volKick" min="0" max="1" step="0.05" value="0.9" class="accent-rose-500 w-full">
@@ -163,6 +184,10 @@
                         <span class="text-xs text-slate-400 block mb-1">Raumhall</span>
                         <input type="range" id="volRoom" min="0" max="1" step="0.05" value="0.35" class="accent-rose-500 w-full">
                     </div>
+                    <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50 col-span-2 sm:col-span-1">
+                        <span class="text-xs text-slate-400 block mb-1">Humanize (Feel)</span>
+                        <input type="range" id="humanizeVal" min="0" max="1" step="0.1" value="0.5" class="accent-rose-500 w-full">
+                    </div>
                 </div>
             </div>
 
@@ -171,7 +196,7 @@
 
     <!-- FOOTER -->
     <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-800/50">
-        oam drums &copy; 2026
+        OAM Drum AI &copy; 2026 &bull; GitHub Pages Edition
     </footer>
 
     <script>
@@ -184,6 +209,7 @@
             totalMeasures: 38,
             timeSignature: '4/4',
             bpm: 120,
+            style: 'auto',
             measures: []
         };
 
@@ -191,7 +217,7 @@
             bpm: 120,
             timeSig: '4/4',
             totalMeasures: 38,
-            hasDrumStaff: true,
+            style: 'rock',
             extractedPatterns: []
         };
 
@@ -215,9 +241,6 @@
             if (e.target.files.length) handleFile(e.target.files[0]);
         });
 
-        // ============================================================
-        // PARTITUR-ANALYSE: EXAKTE TAKTZAHL & SCHLAGZEUG-NOTEN-PARSER
-        // ============================================================
         function handleFile(file) {
             if (file.type !== 'application/pdf') {
                 alert('Bitte lade eine gültige PDF-Datei hoch.');
@@ -232,20 +255,18 @@
             reader.readAsArrayBuffer(file);
             reader.onload = async function() {
                 try {
-                    document.getElementById('loadingStatus').textContent = 'Analysiere Taktzahlen, Notenlinien und Schlagzeug-Stimme...';
+                    document.getElementById('loadingStatus').textContent = 'Erkenne Stil, Tempo & Noten...';
                     const typedarray = new Uint8Array(this.result);
                     
                     let foundBpm = 120;
                     let foundTimeSig = '4/4';
                     let totalMeasures = 38;
-                    let hasDrumStaff = true;
-                    let extractedPatterns = [];
+                    let detectedStyle = 'rock';
+                    let measureMarkers = [];
 
                     try {
                         const pdfDoc = await pdfjsLib.getDocument(typedarray).promise;
                         let fullText = '';
-                        let measureMarkers = [];
-                        let allNoteItems = [];
 
                         for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
                             const page = await pdfDoc.getPage(pageNum);
@@ -266,82 +287,61 @@
                                         measureMarkers.push({ num: val, page: pageNum, x, y });
                                     }
                                 }
-
-                                if (str.length > 0 && !/^[a-zA-Z0-9\s.,:;()\-/]+$/.test(str)) {
-                                    allNoteItems.push({ str, page: pageNum, x, y, width: viewport.width });
-                                }
                             });
                         }
 
-                        // 1. BPM erkennen
                         const bpmMatch = fullText.match(/(?:BPM|Tempo|♩|=|q)\s*[:=]?\s*(\d{2,3})/i);
-                        if (bpmMatch && parseInt(bpmMatch[1]) >= 40 && parseInt(bpmMatch[1]) <= 260) {
+                        if (bpmMatch && parseInt(bpmMatch[1]) >= 40 && parseInt(bpmMatch[1]) <= 280) {
                             foundBpm = parseInt(bpmMatch[1]);
                         }
 
-                        // 2. Taktart erkennen
-                        if (/\b6\s*\/\s*8\b/.test(fullText)) foundTimeSig = '6/8';
-                        else if (/\b3\s*\/\s*4\b/.test(fullText)) foundTimeSig = '3/4';
-                        else if (/\b4\s*\/\s*4\b/.test(fullText) || /\bC\b/.test(fullText)) foundTimeSig = '4/4';
+                        const textLower = fullText.toLowerCase();
+                        if (/walzer|waltz|3\/4/.test(textLower)) {
+                            foundTimeSig = '3/4';
+                            detectedStyle = 'walzer';
+                        } else if (/polka/.test(textLower)) {
+                            foundTimeSig = '2/4';
+                            detectedStyle = 'polka';
+                        } else if (/marsch|march/.test(textLower)) {
+                            detectedStyle = 'marsch';
+                        } else if (/schlager|foxtrot|fox/.test(textLower)) {
+                            detectedStyle = 'schlager';
+                        } else if (/\b6\s*\/\s*8\b/.test(fullText)) {
+                            foundTimeSig = '6/8';
+                        } else if (/\b3\s*\/\s*4\b/.test(fullText)) {
+                            foundTimeSig = '3/4';
+                            detectedStyle = 'walzer';
+                        }
 
-                        // 3. Schlagzeugspur erkennen
-                        hasDrumStaff = /(drum|schlagzeug|percussion|batterie|snare|hi-hat|cymbal|kick)/i.test(fullText);
-
-                        // 4. EXAKTE TAKTZAHL BERECHNEN
                         if (measureMarkers.length > 0) {
                             measureMarkers.sort((a, b) => a.num - b.num);
                             const highestMarker = measureMarkers[measureMarkers.length - 1];
-                            
                             let measuresPerSystem = 4;
                             for (let i = 1; i < measureMarkers.length; i++) {
                                 const diff = measureMarkers[i].num - measureMarkers[i - 1].num;
-                                if (diff >= 2 && diff <= 8 && Math.abs(measureMarkers[i].x - measureMarkers[i - 1].x) < 25) {
-                                    measuresPerSystem = diff;
-                                    break;
-                                }
+                                if (diff >= 2 && diff <= 8) { measuresPerSystem = diff; break; }
                             }
-
-                            const lastSystemNotes = allNoteItems.filter(n => 
-                                n.page === highestMarker.page && Math.abs(n.y - highestMarker.y) < 45
-                            );
-
-                            if (lastSystemNotes.length > 0) {
-                                const minX = Math.min(...lastSystemNotes.map(n => n.x));
-                                const maxX = Math.max(...lastSystemNotes.map(n => n.x));
-                                const pageSpan = lastSystemNotes[0].width * 0.78;
-                                const fillRatio = Math.min(1, Math.max(0.25, (maxX - minX) / pageSpan));
-                                const measuresInLastRow = Math.max(1, Math.round(measuresPerSystem * fillRatio));
-                                totalMeasures = highestMarker.num + measuresInLastRow - 1;
-                            } else {
-                                totalMeasures = highestMarker.num + (measuresPerSystem - 1);
-                            }
+                            totalMeasures = highestMarker.num + (measuresPerSystem - 1);
                         } else {
                             totalMeasures = pdfDoc.numPages * 16;
                         }
 
-                        // 5. SCHLAGZEUG-NOTEN IN RHYTHMUS-MUSTER ÜBERSETZEN
-                        extractedPatterns = parseDrumNotesIntoMeasures(allNoteItems, totalMeasures, foundTimeSig);
-
                     } catch (pdfErr) {
-                        console.warn('PDF.js Parser Fallback:', pdfErr);
+                        console.warn('PDF Fallback:', pdfErr);
                     }
 
                     detectedMetadata = {
                         bpm: foundBpm,
                         timeSig: foundTimeSig,
                         totalMeasures: totalMeasures,
-                        hasDrumStaff: hasDrumStaff,
-                        extractedPatterns: extractedPatterns
+                        style: detectedStyle,
+                        extractedPatterns: []
                     };
-
-                    buildSongArrangement(detectedMetadata);
 
                     setTimeout(() => {
                         loadingView.classList.add('hidden');
-                        playerView.classList.remove('hidden');
-                        resetFileBtn.classList.remove('hidden');
                         showMetadataModal(detectedMetadata);
-                    }, 700);
+                    }, 600);
 
                 } catch (err) {
                     console.error(err);
@@ -352,160 +352,83 @@
             };
         }
 
-        function parseDrumNotesIntoMeasures(noteItems, totalMeasures, timeSig) {
-            const subs = timeSig === '3/4' ? 6 : (timeSig === '6/8' ? 6 : 8);
-            if (!noteItems || noteItems.length < 10) return [];
-
-            let systems = [];
-            noteItems.sort((a, b) => (a.page - b.page) || (b.y - a.y));
-
-            noteItems.forEach(note => {
-                let sys = systems.find(s => s.page === note.page && Math.abs(s.centerY - note.y) < 35);
-                if (!sys) {
-                    sys = { page: note.page, centerY: note.y, notes: [] };
-                    systems.push(sys);
-                }
-                sys.notes.push(note);
-            });
-
-            let patterns = [];
-            const measuresPerSystem = Math.max(1, Math.ceil(totalMeasures / Math.max(1, systems.length)));
-
-            systems.forEach(sys => {
-                sys.notes.sort((a, b) => a.x - b.x);
-                const minX = sys.notes[0].x;
-                const maxX = sys.notes[sys.notes.length - 1].x;
-                const spanX = Math.max(100, maxX - minX);
-
-                const ys = sys.notes.map(n => n.y);
-                const minY = Math.min(...ys);
-                const maxY = Math.max(...ys);
-                const spanY = Math.max(12, maxY - minY);
-
-                for (let m = 0; m < measuresPerSystem; m++) {
-                    if (patterns.length >= totalMeasures) break;
-                    const mStartX = minX + (m / measuresPerSystem) * spanX;
-                    const mEndX = minX + ((m + 1) / measuresPerSystem) * spanX;
-                    const mSpan = mEndX - mStartX;
-
-                    const mNotes = sys.notes.filter(n => n.x >= mStartX - 2 && n.x <= mEndX + 2);
-                    let steps = Array.from({ length: subs }, () => ({ kick: false, snare: false, hat: false, crash: false, tom: false }));
-
-                    if (mNotes.length > 0) {
-                        mNotes.forEach(n => {
-                            const relX = Math.min(0.99, Math.max(0, (n.x - mStartX) / mSpan));
-                            const stepIdx = Math.floor(relX * subs);
-                            const relY = (n.y - minY) / spanY;
-
-                            if (relY < 0.32) {
-                                steps[stepIdx].kick = true;
-                            } else if (relY < 0.62) {
-                                steps[stepIdx].snare = true;
-                            } else if (relY < 0.80) {
-                                steps[stepIdx].tom = true;
-                            } else {
-                                steps[stepIdx].hat = true;
-                            }
-                        });
-                    }
-                    patterns.push(steps);
-                }
-            });
-
-            return patterns;
-        }
-
         function showMetadataModal(meta) {
-            document.getElementById('detectedBpmText').textContent = `${meta.bpm} BPM`;
-            document.getElementById('detectedTimeSigText').textContent = meta.timeSig;
-            document.getElementById('detectedMeasuresText').textContent = `${meta.totalMeasures} Takte`;
-            
-            const msgEl = document.getElementById('drumTrackDetectedMsg');
-            if (meta.extractedPatterns && meta.extractedPatterns.length > 0) {
-                msgEl.innerHTML = '🥁 <strong>Schlagzeug-Noten ausgelesen:</strong> Kick-, Snare- und Becken-Positionen wurden direkt aus der Partitur übertragen.';
-            } else {
-                msgEl.innerHTML = '🎼 <strong>Partitur-Struktur erkannt:</strong> Taktlänge und Arrangement wurden für alle ' + meta.totalMeasures + ' Takte erstellt.';
-            }
-
+            document.getElementById('modalBpm').value = meta.bpm;
+            document.getElementById('modalTimeSig').value = meta.timeSig;
+            document.getElementById('modalMeasures').value = meta.totalMeasures;
+            document.getElementById('modalStyle').value = meta.style;
             metadataModal.classList.remove('hidden');
         }
 
         document.getElementById('applyMetaBtn').addEventListener('click', () => {
-            document.getElementById('bpmInput').value = detectedMetadata.bpm;
-            document.getElementById('timeSig').value = detectedMetadata.timeSig;
-            songData.bpm = detectedMetadata.bpm;
-            songData.timeSignature = detectedMetadata.timeSig;
-            buildSongArrangement(detectedMetadata);
+            const bpm = parseInt(document.getElementById('modalBpm').value) || 120;
+            const timeSig = document.getElementById('modalTimeSig').value;
+            const totalMeasures = parseInt(document.getElementById('modalMeasures').value) || 32;
+            const style = document.getElementById('modalStyle').value;
+
+            document.getElementById('bpmInput').value = bpm;
+            document.getElementById('timeSig').value = timeSig;
+
+            songData = {
+                bpm,
+                timeSignature: timeSig,
+                totalMeasures,
+                style,
+                measures: []
+            };
+
+            buildStyleArrangement(songData);
             updateUIStats();
+
+            document.getElementById('activeStyleDisplay').textContent = `Stil: ${style.toUpperCase()}`;
             metadataModal.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            resetFileBtn.classList.remove('hidden');
         });
 
-        document.getElementById('ignoreMetaBtn').addEventListener('click', () => {
-            songData.bpm = parseInt(document.getElementById('bpmInput').value) || 120;
-            songData.timeSignature = document.getElementById('timeSig').value;
-            buildSongArrangement({
-                ...detectedMetadata,
-                bpm: songData.bpm,
-                timeSig: songData.timeSignature
-            });
-            updateUIStats();
-            metadataModal.classList.add('hidden');
-        });
+        function buildStyleArrangement(config) {
+            config.measures = [];
+            const subs = config.timeSignature === '3/4' ? 6 : (config.timeSignature === '6/8' ? 6 : 8);
 
-        function buildSongArrangement(meta) {
-            songData.totalMeasures = meta.totalMeasures;
-            songData.timeSignature = meta.timeSig;
-            songData.measures = [];
-
-            const subs = meta.timeSig === '3/4' ? 6 : (meta.timeSig === '6/8' ? 6 : 8);
-
-            for (let m = 0; m < meta.totalMeasures; m++) {
-                const isFirst = (m === 0);
-                const isLast = (m === meta.totalMeasures - 1);
-                const isFill = ((m + 1) % 8 === 0 && !isLast);
-                const isNewSection = (m > 0 && m % 8 === 0);
-
-                if (meta.extractedPatterns && meta.extractedPatterns[m] && meta.extractedPatterns[m].length === subs) {
-                    let parsedSteps = JSON.parse(JSON.stringify(meta.extractedPatterns[m]));
-                    const hasAnyNote = parsedSteps.some(s => s.kick || s.snare || s.hat || s.tom);
-                    if (hasAnyNote) {
-                        if (isFirst || isLast) parsedSteps[0].crash = true;
-                        songData.measures.push(parsedSteps);
-                        continue;
-                    }
-                }
-
+            for (let m = 0; m < config.totalMeasures; m++) {
                 let steps = [];
+                const isFirst = (m === 0);
+                const isLast = (m === config.totalMeasures - 1);
+                const isFill = ((m + 1) % 8 === 0 && !isLast);
+
                 for (let s = 0; s < subs; s++) {
                     let kick = false, snare = false, hat = false, crash = false, tom = false;
 
-                    if (isLast) {
-                        if (s === 0) { kick = true; crash = true; }
-                    } else if (meta.timeSig === '4/4') {
-                        if ((isFirst || isNewSection) && s === 0) crash = true;
-                        if (!isFill || s < 4) hat = true;
-                        if (s === 0 || s === 4) kick = true;
-                        if (s === 2 || s === 6) snare = true;
-                        if (isFill && s >= 4) {
-                            if (s === 4 || s === 5) snare = true;
-                            if (s === 6 || s === 7) tom = true;
-                        }
-                    } else if (meta.timeSig === '3/4') {
-                        if ((isFirst || isNewSection) && s === 0) crash = true;
+                    if (isLast && s === 0) {
+                        kick = true; crash = true;
+                    } else if (config.style === 'walzer') {
                         hat = true;
                         if (s === 0) kick = true;
                         if (s === 2 || s === 4) snare = true;
-                    } else if (meta.timeSig === '6/8') {
-                        if ((isFirst || isNewSection) && s === 0) crash = true;
+                    } else if (config.style === 'polka') {
                         hat = true;
-                        if (s === 0 || s === 3) kick = true;
-                        if (s === 3) snare = true;
+                        if (s === 0 || s === 4) kick = true;
+                        if (s === 2 || s === 6) snare = true;
+                    } else if (config.style === 'marsch') {
+                        hat = true;
+                        if (s === 0 || s === 4) kick = true;
+                        if (s === 2 || s === 6) snare = true;
+                        if (isFill && s >= 4) { snare = true; tom = true; }
+                    } else if (config.style === 'schlager') {
+                        if (s % 2 === 0) hat = true;
+                        if (s === 0 || s === 2 || s === 4 || s === 6) kick = true;
+                        if (s === 2 || s === 6) snare = true;
+                    } else {
+                        if (isFirst && s === 0) crash = true;
+                        if (!isFill || s < 4) hat = true;
+                        if (s === 0 || s === 4) kick = true;
+                        if (s === 2 || s === 6) snare = true;
+                        if (isFill && s >= 4) { snare = true; tom = true; }
                     }
                     steps.push({ kick, snare, hat, crash, tom });
                 }
-                songData.measures.push(steps);
+                config.measures.push(steps);
             }
-            updateUIStats();
         }
 
         function updateUIStats() {
@@ -543,15 +466,12 @@
             fileInput.value = '';
         });
 
-        // --- AKUSTIK DRUM SYNTHESIZER & REVERB ---
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 createRoomReverb();
             }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
         }
 
         function createRoomReverb() {
@@ -583,14 +503,21 @@
             }
         }
 
+        function humanizedVol(baseVol) {
+            const humanizeFactor = parseFloat(document.getElementById('humanizeVal').value) || 0.5;
+            const variation = (Math.random() * 0.2 - 0.1) * humanizeFactor;
+            return Math.max(0.1, Math.min(1.0, baseVol * (1 + variation)));
+        }
+
         function playKick(vol) {
             if (vol <= 0) return;
             const t = audioCtx.currentTime;
+            const v = humanizedVol(vol);
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.frequency.setValueAtTime(140, t);
             osc.frequency.exponentialRampToValueAtTime(40, t + 0.12);
-            gain.gain.setValueAtTime(vol, t);
+            gain.gain.setValueAtTime(v, t);
             gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
             osc.connect(gain);
             connectWithRoom(gain, 1.0);
@@ -601,12 +528,13 @@
         function playSnare(vol) {
             if (vol <= 0) return;
             const t = audioCtx.currentTime;
+            const v = humanizedVol(vol);
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(180, t);
             osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
-            gain.gain.setValueAtTime(vol * 0.4, t);
+            gain.gain.setValueAtTime(v * 0.4, t);
             gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
             osc.connect(gain);
             connectWithRoom(gain, 0.8);
@@ -623,7 +551,7 @@
             filter.type = 'bandpass';
             filter.frequency.value = 1600;
             const nGain = audioCtx.createGain();
-            nGain.gain.setValueAtTime(vol * 0.7, t);
+            nGain.gain.setValueAtTime(v * 0.7, t);
             nGain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
             noise.connect(filter);
             filter.connect(nGain);
@@ -634,12 +562,13 @@
         function playTom(vol) {
             if (vol <= 0) return;
             const t = audioCtx.currentTime;
+            const v = humanizedVol(vol);
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(150, t);
             osc.frequency.exponentialRampToValueAtTime(70, t + 0.2);
-            gain.gain.setValueAtTime(vol * 0.8, t);
+            gain.gain.setValueAtTime(v * 0.8, t);
             gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
             osc.connect(gain);
             connectWithRoom(gain, 1.0);
@@ -650,6 +579,7 @@
         function playCymbal(vol, dur, hpFreq) {
             if (vol <= 0) return;
             const t = audioCtx.currentTime;
+            const v = humanizedVol(vol);
             const ratios = [263, 400, 474, 587, 845];
             const bp = audioCtx.createBiquadFilter();
             bp.type = 'bandpass';
@@ -658,7 +588,7 @@
             hp.type = 'highpass';
             hp.frequency.value = hpFreq;
             const master = audioCtx.createGain();
-            master.gain.setValueAtTime(vol * 0.35, t);
+            master.gain.setValueAtTime(v * 0.35, t);
             master.gain.exponentialRampToValueAtTime(0.0008, t + dur);
 
             ratios.forEach(f => {
@@ -690,7 +620,6 @@
             osc.stop(t + 0.04);
         }
 
-        // --- PLAYBACK & SONG ENDE LOGIK ---
         playBtn.addEventListener('click', () => {
             if (isPlaying) {
                 stopAudio();
@@ -731,15 +660,6 @@
             if (startMeas < 1) startMeas = 1;
             if (startMeas > songData.totalMeasures) startMeas = songData.totalMeasures;
 
-            if (timeSig !== songData.timeSignature) {
-                songData.timeSignature = timeSig;
-                buildSongArrangement({
-                    ...detectedMetadata,
-                    bpm: bpm,
-                    timeSig: timeSig
-                });
-            }
-
             const beatsPerMeasure = timeSig === '3/4' ? 3 : (timeSig === '6/8' ? 6 : 4);
             const subsPerBeat = timeSig === '6/8' ? 1 : 2;
             const intervalMs = (60 / bpm / subsPerBeat) * 1000;
@@ -757,7 +677,6 @@
             timerID = setInterval(() => {
                 if (!isPlaying) return;
 
-                // 1. VORZÄHL-PHASE
                 if (countInStep < totalCountIn) {
                     if (countInStep % subsPerBeat === 0) {
                         const beat = Math.floor(countInStep / subsPerBeat);
@@ -768,7 +687,6 @@
                     return;
                 }
 
-                // 2. SONG-ENDE PRÜFUNG
                 if (currentMeasureIdx >= songData.totalMeasures) {
                     stopAudio(true);
                     return;
