@@ -1,735 +1,166 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OAM Drum AI</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    </script>
-    <style>
-        body { background-color: #0b0f19; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OAM Drum AI – Natural Performance Engine</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+:root{--bg:#070b13;--panel:#101725;--panel2:#151e2f;--line:#263248;--text:#f7f9fc;--muted:#98a6bb;--red:#e11d48;--red2:#fb7185;--amber:#f59e0b;--blue:#38bdf8;--green:#34d399;--radius:18px}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 20% -10%,#252036 0,transparent 35%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}button,input,select{font:inherit}.hidden{display:none!important}.topbar{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:15px;padding:12px clamp(16px,4vw,48px);background:rgba(10,15,25,.94);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:13px;min-width:250px}.brand img{width:92px;height:58px;object-fit:contain;background:#fff;border-radius:12px;padding:3px;box-shadow:0 8px 24px #0007}.brand h1{font-size:18px;margin:0;letter-spacing:-.02em}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #be123c66;background:#9f123933;color:#fda4af;border-radius:99px;padding:3px 8px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.quick{display:flex;flex-wrap:wrap;gap:9px}.field,.mini{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:7px 10px}.field label,.mini label{font-size:11px;color:var(--muted);font-weight:700}.field input,.field select,.mini input,.mini select,.control input,.control select,.event-row input,.event-row select{border:1px solid #33425a;background:#0a101b;color:#fff;border-radius:8px;padding:7px 8px;outline:none}.field input{width:65px}.field select{min-width:72px}.btn{border:1px solid transparent;border-radius:11px;padding:10px 15px;color:#fff;background:#25314a;cursor:pointer;font-weight:750;transition:.18s}.btn:hover{filter:brightness(1.15);transform:translateY(-1px)}.btn.primary{background:linear-gradient(135deg,#e11d48,#be123c);box-shadow:0 10px 28px #e11d4833}.btn.secondary{border-color:#33425a;background:#151e2f}.btn.danger{border-color:#7f1d3b;background:#4c1026}.btn.small{font-size:12px;padding:7px 10px}.shell{width:min(1180px,calc(100% - 28px));margin:34px auto 52px}.drop{min-height:410px;border:2px dashed #3b4961;border-radius:24px;background:linear-gradient(145deg,#101725cc,#0d1421cc);display:grid;place-items:center;text-align:center;padding:42px;cursor:pointer;transition:.2s}.drop:hover,.drop.drag{border-color:var(--red2);box-shadow:0 0 0 4px #e11d4817}.drop-icon{width:78px;height:78px;border-radius:50%;display:grid;place-items:center;margin:auto;background:#e11d481a;color:#fb7185;font-size:35px}.drop h2{margin:20px 0 8px;font-size:clamp(22px,4vw,34px)}.drop p{color:var(--muted);margin:0 auto 16px;max-width:650px}.format-pills{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.format-pills span{font-size:11px;border:1px solid var(--line);background:#151e2f;border-radius:99px;padding:5px 9px;color:#bac6d8}.loading{text-align:center;padding:100px 20px}.spinner{width:55px;height:55px;border:5px solid #263248;border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px}@keyframes spin{to{transform:rotate(360deg)}}.panel{background:linear-gradient(160deg,#111927,#0d1421);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 18px 60px #0005}.player{padding:clamp(18px,4vw,30px)}.player-head{display:flex;align-items:start;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);padding-bottom:18px}.player-head h2{margin:0 0 4px;font-size:21px}.muted{color:var(--muted);font-size:12px}.status{font-size:11px;font-weight:800;border:1px solid #065f4666;background:#064e3b38;color:#6ee7b7;padding:6px 10px;border-radius:99px;white-space:nowrap}.progress{height:8px;background:#1f293b;border-radius:99px;overflow:hidden;margin:18px 0}.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--red),#fb7185);transition:width .12s}.transport{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;padding:12px 0 22px}.measure-box{text-align:right;font:700 13px ui-monospace,monospace;color:#b9c5d7}.play{width:92px;height:92px;border:0;border-radius:50%;background:linear-gradient(145deg,#f43f5e,#be123c);color:#fff;font-size:35px;cursor:pointer;box-shadow:0 15px 35px #e11d4844}.play.playing{background:linear-gradient(145deg,#f59e0b,#b45309)}.beatdots{display:flex;gap:7px;min-height:14px}.beatdots i{display:block;width:11px;height:11px;border-radius:50%;background:#334155}.beatdots i.on{background:var(--red2);box-shadow:0 0 12px #fb718599;transform:scale(1.2)}.grid{display:grid;gap:14px}.grid.controls{grid-template-columns:repeat(4,minmax(0,1fr))}.control{background:#111b2b;border:1px solid #243249;border-radius:13px;padding:12px}.control label{display:flex;justify-content:space-between;gap:8px;color:#aab7ca;font-size:11px;font-weight:750;margin-bottom:7px}.control input,.control select{width:100%}.control input[type=range]{padding:0;border:0;accent-color:var(--red)}.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:26px 0 11px}.section-title h3{font-size:14px;margin:0}.section-title p{margin:0}.timeline{display:flex;min-height:53px;border-radius:13px;overflow:hidden;border:1px solid var(--line);background:#0b111c}.segment{min-width:35px;padding:9px 6px;text-align:center;border-right:1px solid #ffffff18;display:flex;flex-direction:column;justify-content:center}.segment strong{font-size:10px}.segment span{font-size:9px;opacity:.75;margin-top:3px}.section-intro{background:#155e7555}.section-verse{background:#1e3a8a66}.section-chorus{background:#9f123966}.section-bridge{background:#6b21a866}.section-outro{background:#374151aa}.section-solo{background:#92400e66}.automation{display:grid;gap:7px}.event-row{display:grid;grid-template-columns:80px 1.25fr 110px 100px 42px;gap:8px;align-items:center}.event-row input,.event-row select{width:100%;font-size:12px}.icon-btn{height:34px;border:1px solid #7f1d3b;background:#4c1026;color:#fda4af;border-radius:8px;cursor:pointer}.sample-strip{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:13px 15px;margin-top:15px;background:#0b1320;border:1px solid #233149;border-radius:13px}.sample-strip strong{font-size:12px}.sample-strip p{margin:3px 0 0}.notice{padding:13px;border:1px solid #334155;background:#111b2b;border-radius:12px;color:#bdc8d8;font-size:12px;line-height:1.5}.modal{position:fixed;inset:0;z-index:50;background:#02050bd9;backdrop-filter:blur(8px);display:grid;place-items:center;padding:18px}.modal-card{width:min(760px,100%);max-height:92vh;overflow:auto;background:#101725;border:1px solid #334155;border-radius:20px;padding:24px;box-shadow:0 30px 90px #000a}.modal-card h2{margin:0 0 4px}.modal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}.modal-grid .control{padding:10px}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}.analysis-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.analysis-cards div{padding:10px;border-radius:10px;background:#0b1320;border:1px solid #223049}.analysis-cards strong{display:block;color:#fff;font-size:12px}.analysis-cards span{font-size:10px;color:var(--muted)}.footer{text-align:center;border-top:1px solid #182235;padding:18px;color:#66758b;font-size:11px}.toast{position:fixed;right:18px;bottom:18px;z-index:80;max-width:360px;padding:12px 15px;border:1px solid #36506b;background:#101b2b;border-radius:12px;box-shadow:0 12px 35px #0008;font-size:12px}.switch{display:flex;align-items:center;gap:8px}.switch input{accent-color:var(--red)}@media(max-width:900px){.grid.controls{grid-template-columns:repeat(2,1fr)}.modal-grid{grid-template-columns:repeat(2,1fr)}.transport{grid-template-columns:1fr auto}.measure-box{grid-column:1/-1;text-align:center}.event-row{grid-template-columns:65px 1fr 92px 90px 38px}}@media(max-width:560px){.topbar{padding:10px 14px}.brand{min-width:0}.brand img{width:72px;height:48px}.quick{width:100%}.field{flex:1}.grid.controls{grid-template-columns:1fr}.modal-grid,.analysis-cards{grid-template-columns:1fr 1fr}.event-row{grid-template-columns:58px 1fr 35px}.event-row .event-tempo,.event-row .event-meter{grid-row:2}.event-row .event-tempo{grid-column:1/2}.event-row .event-meter{grid-column:2/3}.event-row .icon-btn{grid-row:1/3;grid-column:3}.drop{padding:24px;min-height:370px}.shell{width:min(100% - 18px,1180px)}}
+</style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img data-source-file="oam.jpeg" src="data:image/jpeg;base64,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" alt="OAM Logo">
+    <div><div style="display:flex;align-items:center;gap:8px"><h1>OAM Drum AI</h1><span class="badge">Natural Engine</span></div><p id="activeStyle">Stil: Auto · echte Samples</p></div>
+  </div>
+  <div class="quick">
+    <div class="field"><label for="bpmInput">BPM</label><input id="bpmInput" type="number" min="30" max="300" value="120"></div>
+    <div class="field"><label for="timeSig">Takt</label><select id="timeSig"><option>4/4</option><option>3/4</option><option>2/4</option><option>6/8</option><option>12/8</option><option>5/4</option><option>7/8</option></select></div>
+    <div class="field"><label for="startMeasure">Ab Takt</label><input id="startMeasure" type="number" min="1" value="1"></div>
+    <button id="resetBtn" class="btn danger hidden">Neue Datei</button>
+  </div>
+</header>
+<main class="shell">
+  <section id="dropZone" class="drop" tabindex="0" role="button" aria-label="Partitur oder MIDI-Datei hochladen">
+    <div><div class="drop-icon">♫</div><h2>Partitur oder MIDI hierher ziehen</h2><p>Analysiert Noten, Wiederholungen, Dynamik, Songteile sowie Tempo- und Taktwechsel. Bei gescannten PDFs startet automatisch die optische Notenerkennung.</p><div class="format-pills"><span>PDF + Noten-OCR</span><span>MusicXML / XML</span><span>MIDI / MID</span><span>Text-PDF</span></div><input id="fileInput" type="file" accept=".pdf,.musicxml,.xml,.mid,.midi" hidden></div>
+  </section>
+  <section id="loadingView" class="loading hidden"><div class="spinner"></div><h2 id="loadingTitle">Analysiere Partitur …</h2><p id="loadingStatus" class="muted">Datei wird vorbereitet.</p></section>
+  <section id="playerView" class="panel player hidden">
+    <div class="player-head"><div><h2 id="fileName">Partitur geladen</h2><p id="analysisInfo" class="muted">Bereit</p></div><span id="statusBadge" class="status">Bereit</span></div>
+    <div class="progress"><div id="progressBar"></div></div>
+    <div class="transport"><div id="beatDots" class="beatdots"></div><button id="playBtn" class="play" aria-label="Wiedergabe starten">▶</button><div class="measure-box">Takt <span id="currentMeasure">1</span> / <span id="totalMeasures">1</span><br><span id="liveTempo">120 BPM · 4/4</span></div></div>
 
-    <!-- POP-UP MODAL: Erkannte Werte prüfen & editieren -->
-    <div id="metadataModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
-            <div class="flex items-center space-x-3 border-b border-slate-800 pb-3">
-                <span class="text-3xl">🎛️</span>
-                <div>
-                    <h3 class="text-lg font-bold text-white">Partitur-Analyse & Einstellungen</h3>
-                    <p class="text-xs text-slate-400">Prüfe und korrigiere die erkannten Werte vor dem Start:</p>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                <div class="bg-slate-800/90 p-3 rounded-xl border border-slate-700">
-                    <label class="text-xs text-slate-400 block mb-1">Tempo (BPM)</label>
-                    <input type="number" id="modalBpm" min="40" max="280" class="w-full bg-slate-950 text-center font-black text-rose-400 text-lg rounded outline-none py-1 border border-slate-700 focus:border-rose-500">
-                </div>
-                <div class="bg-slate-800/90 p-3 rounded-xl border border-slate-700">
-                    <label class="text-xs text-slate-400 block mb-1">Taktart</label>
-                    <select id="modalTimeSig" class="w-full bg-slate-950 text-center text-amber-400 font-bold text-lg rounded outline-none py-1.5 border border-slate-700 focus:border-amber-500">
-                        <option value="4/4">4/4</option>
-                        <option value="3/4">3/4</option>
-                        <option value="6/8">6/8</option>
-                        <option value="2/4">2/4</option>
-                    </select>
-                </div>
-                <div class="bg-slate-800/90 p-3 rounded-xl border border-slate-700">
-                    <label class="text-xs text-slate-400 block mb-1">Takte</label>
-                    <input type="number" id="modalMeasures" min="2" max="500" class="w-full bg-slate-950 text-center font-black text-emerald-400 text-lg rounded outline-none py-1 border border-slate-700 focus:border-emerald-500">
-                </div>
-                <div class="bg-slate-800/90 p-3 rounded-xl border border-slate-700">
-                    <label class="text-xs text-slate-400 block mb-1">Musikstil</label>
-                    <select id="modalStyle" class="w-full bg-slate-950 text-center text-sky-400 font-bold text-sm rounded outline-none py-1.5 border border-slate-700 focus:border-sky-500">
-                        <option value="auto">Auto (KI)</option>
-                        <option value="rock">Rock / Pop</option>
-                        <option value="walzer">Walzer (3/4)</option>
-                        <option value="polka">Polka</option>
-                        <option value="marsch">Marsch</option>
-                        <option value="schlager">Schlager</option>
-                    </select>
-                </div>
-            </div>
-
-            <p id="drumTrackDetectedMsg" class="text-xs text-slate-300 bg-slate-800/60 p-3 rounded-lg border border-slate-700">
-                ✅ Schlagzeug-Pattern und Stil erfolgreich an die Partitur angepasst.
-            </p>
-
-            <div class="flex justify-end space-x-3 pt-2">
-                <button id="applyMetaBtn" class="w-full py-2.5 rounded-xl text-sm font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 transition cursor-pointer">
-                    Einstellungen übernehmen & Startklar machen
-                </button>
-            </div>
-        </div>
+    <div class="grid controls">
+      <div class="control"><label for="styleSelect"><span>Musikstil</span><span>16 Presets</span></label><select id="styleSelect"></select></div>
+      <div class="control"><label for="kitSelect"><span>Drum-Kit</span><span>Sample-Layer</span></label><select id="kitSelect"><option value="studio">Studio Acoustic</option><option value="vintage">Loose Vintage</option><option value="jazz">Jazz Brushes</option><option value="electronic">Electronic</option><option value="arena">Arena Rock</option><option value="small">Kleine Akustikbesetzung</option></select></div>
+      <div class="control"><label for="complexity"><span>Groove-Komplexität</span></label><select id="complexity"><option value="simple">Einfach</option><option value="natural" selected>Natürlich</option><option value="lively">Lebendig</option></select></div>
+      <div class="control"><label for="fillEvery"><span>Fill-ins</span></label><select id="fillEvery"><option value="style">Stilabhängig</option><option value="4">alle 4 Takte</option><option value="8">alle 8 Takte</option><option value="16">alle 16 Takte</option><option value="0">Aus</option></select></div>
+      <div class="control"><label for="humanize"><span>Humanize</span><span id="humanizeOut">55%</span></label><input id="humanize" type="range" min="0" max="100" value="55"></div>
+      <div class="control"><label for="swing"><span>Swing</span><span id="swingOut">0%</span></label><input id="swing" type="range" min="0" max="75" value="0"></div>
+      <div class="control"><label for="dynamics"><span>Dynamik</span><span id="dynamicsOut">65%</span></label><input id="dynamics" type="range" min="0" max="100" value="65"></div>
+      <div class="control"><label for="ghostNotes"><span>Ghost Notes</span><span id="ghostOut">25%</span></label><input id="ghostNotes" type="range" min="0" max="100" value="25"></div>
+      <div class="control"><label for="volKick"><span>Kick</span></label><input id="volKick" type="range" min="0" max="100" value="88"></div>
+      <div class="control"><label for="volSnare"><span>Snare</span></label><input id="volSnare" type="range" min="0" max="100" value="82"></div>
+      <div class="control"><label for="volCym"><span>Hi-Hat / Becken</span></label><input id="volCym" type="range" min="0" max="100" value="62"></div>
+      <div class="control"><label for="room"><span>Raum</span></label><input id="room" type="range" min="0" max="100" value="28"></div>
     </div>
 
-    <!-- HEADER: Steuerung oben -->
-    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-40">
-        <!-- Logo & Titel -->
-        <div class="flex items-center space-x-3.5">
-            <img src="oam.jpeg" alt="OAM Drum AI" class="h-14 w-auto object-contain rounded-xl shadow-md border border-slate-700" onerror="this.style.display='none'; document.getElementById('logoFallback').classList.remove('hidden');">
-            <span id="logoFallback" class="hidden text-xl font-black tracking-wider text-rose-500 uppercase">OAM Drum AI</span>
-            <div>
-                <h1 class="text-lg font-black tracking-tight text-white flex items-center space-x-2">
-                    <span>OAM Drum AI</span>
-                    <span class="text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/40 px-2 py-0.5 rounded-full">Band AI</span>
-                </h1>
-                <p class="text-xs text-slate-400" id="activeStyleDisplay">Stil: Standard / Auto</p>
-            </div>
-        </div>
-
-        <!-- Oben Links: BPM, Taktart, Taktstart -->
-        <div class="flex flex-wrap items-center gap-3">
-            <div class="flex items-center space-x-2 bg-slate-800/90 px-3 py-1.5 rounded-lg border border-slate-700">
-                <label for="bpmInput" class="text-xs font-semibold text-slate-400">BPM:</label>
-                <input type="number" id="bpmInput" min="40" max="280" value="120" class="w-16 bg-slate-950 text-center font-bold text-rose-400 rounded outline-none px-1 py-0.5">
-            </div>
-
-            <div class="flex items-center space-x-2 bg-slate-800/90 px-3 py-1.5 rounded-lg border border-slate-700">
-                <label for="timeSig" class="text-xs font-semibold text-slate-400">Takt:</label>
-                <select id="timeSig" class="bg-slate-950 text-slate-200 text-sm font-bold rounded outline-none px-2 py-0.5">
-                    <option value="4/4">4/4</option>
-                    <option value="3/4">3/4</option>
-                    <option value="6/8">6/8</option>
-                    <option value="2/4">2/4</option>
-                </select>
-            </div>
-
-            <div class="flex items-center space-x-2 bg-slate-800/90 px-3 py-1.5 rounded-lg border border-slate-700">
-                <label for="startMeasure" class="text-xs font-semibold text-slate-400">Ab Takt:</label>
-                <input type="number" id="startMeasure" min="1" value="1" class="w-14 bg-slate-950 text-center font-bold text-slate-200 rounded outline-none px-1 py-0.5">
-            </div>
-        </div>
-
-        <!-- Oben Rechts: Datei entfernen Button -->
-        <div>
-            <button id="resetFileBtn" class="hidden bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-700/60 px-4 py-1.5 rounded-lg text-sm font-semibold transition cursor-pointer flex items-center space-x-1.5">
-                <span>🗑️ Neue Partitur</span>
-            </button>
-        </div>
-    </header>
-
-    <!-- HAUPTINHALT -->
-    <main class="flex-grow flex items-center justify-center p-6">
-        <div class="w-full max-w-3xl">
-
-            <!-- ZUSTAND 1: Drag & Drop Upload -->
-            <div id="dropZone" class="border-2 border-dashed border-slate-700 hover:border-rose-500 rounded-2xl p-14 text-center bg-slate-900/50 hover:bg-slate-900/90 transition cursor-pointer flex flex-col items-center justify-center space-y-4 shadow-xl">
-                <div class="w-16 h-16 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center text-3xl">
-                    📄
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold text-slate-100">PDF Partitur / Noten hierher ziehen</h2>
-                    <p class="text-sm text-slate-400 mt-1">Erkennt automatisch BPM, Taktart, Stil (Walzer, Polka, Marsch...) & Noten</p>
-                </div>
-                <input type="file" id="fileInput" accept=".pdf" class="hidden">
-            </div>
-
-            <!-- ZUSTAND 2: Analyse-Ladeanzeige -->
-            <div id="loadingView" class="hidden text-center py-16 space-y-4">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-rose-500 border-t-transparent"></div>
-                <p id="loadingStatus" class="text-slate-300 font-medium">Analysiere Stil & Notenstruktur...</p>
-            </div>
-
-            <!-- ZUSTAND 3: Audio Player & Drum Controller -->
-            <div id="playerView" class="hidden bg-slate-900/95 border border-slate-800 rounded-2xl p-8 shadow-2xl space-y-6">
-                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
-                    <div>
-                        <h3 id="fileNameDisplay" class="text-lg font-bold text-slate-100">Partitur geladen</h3>
-                        <p class="text-xs text-slate-400" id="analysisInfo">Stil-Modus aktiv</p>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <div class="bg-slate-950 border border-slate-800 px-3 py-1 rounded-lg text-xs font-mono text-slate-300">
-                            Takt: <span id="currentMeasureDisplay" class="text-rose-400 font-bold">1</span> / <span id="totalMeasuresDisplay">38</span>
-                        </div>
-                        <span id="statusBadge" class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-semibold">Bereit</span>
-                    </div>
-                </div>
-
-                <!-- Fortschrittsbalken -->
-                <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div id="songProgressBar" class="bg-rose-500 h-2 transition-all duration-150" style="width: 0%"></div>
-                </div>
-
-                <!-- Play/Stop & Beats -->
-                <div class="flex flex-col items-center justify-center py-4 space-y-4">
-                    <div id="beatDots" class="flex space-x-2 mb-1"></div>
-                    <button id="playBtn" class="w-24 h-24 bg-rose-600 hover:bg-rose-500 text-white rounded-full flex items-center justify-center text-4xl shadow-lg shadow-rose-600/30 transition transform hover:scale-105 active:scale-95 cursor-pointer">
-                        ▶
-                    </button>
-                    <p id="helperHint" class="text-xs text-slate-400">Zählt 1 Takt im Stil vor &bull; Stoppt vollautomatisch am Songende</p>
-                </div>
-
-                <!-- Mixer & Erweiterte Einstellungen -->
-                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-4 border-t border-slate-800/80 text-center">
-                    <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
-                        <span class="text-xs text-slate-400 block mb-1">Kick Drum</span>
-                        <input type="range" id="volKick" min="0" max="1" step="0.05" value="0.9" class="accent-rose-500 w-full">
-                    </div>
-                    <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
-                        <span class="text-xs text-slate-400 block mb-1">Snare</span>
-                        <input type="range" id="volSnare" min="0" max="1" step="0.05" value="0.85" class="accent-rose-500 w-full">
-                    </div>
-                    <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
-                        <span class="text-xs text-slate-400 block mb-1">Hi-Hat / Becken</span>
-                        <input type="range" id="volHat" min="0" max="1" step="0.05" value="0.65" class="accent-rose-500 w-full">
-                    </div>
-                    <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50">
-                        <span class="text-xs text-slate-400 block mb-1">Raumhall</span>
-                        <input type="range" id="volRoom" min="0" max="1" step="0.05" value="0.35" class="accent-rose-500 w-full">
-                    </div>
-                    <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700/50 col-span-2 sm:col-span-1">
-                        <span class="text-xs text-slate-400 block mb-1">Humanize (Feel)</span>
-                        <input type="range" id="humanizeVal" min="0" max="1" step="0.1" value="0.5" class="accent-rose-500 w-full">
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-800/50">
-        OAM Drum AI &copy; 2026 &bull; GitHub Pages Edition
-    </footer>
-
-    <script>
-        let audioCtx = null;
-        let reverbNode = null;
-        let isPlaying = false;
-        let timerID = null;
-
-        let songData = {
-            totalMeasures: 38,
-            timeSignature: '4/4',
-            bpm: 120,
-            style: 'auto',
-            measures: []
-        };
-
-        let detectedMetadata = {
-            bpm: 120,
-            timeSig: '4/4',
-            totalMeasures: 38,
-            style: 'rock',
-            extractedPatterns: []
-        };
-
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const loadingView = document.getElementById('loadingView');
-        const playerView = document.getElementById('playerView');
-        const resetFileBtn = document.getElementById('resetFileBtn');
-        const playBtn = document.getElementById('playBtn');
-        const metadataModal = document.getElementById('metadataModal');
-
-        dropZone.addEventListener('click', () => fileInput.click());
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-rose-500'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-rose-500'));
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('border-rose-500');
-            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-        });
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) handleFile(e.target.files[0]);
-        });
-
-        function handleFile(file) {
-            if (file.type !== 'application/pdf') {
-                alert('Bitte lade eine gültige PDF-Datei hoch.');
-                return;
-            }
-
-            document.getElementById('fileNameDisplay').textContent = file.name;
-            dropZone.classList.add('hidden');
-            loadingView.classList.remove('hidden');
-
-            const reader = new FileReader();
-            reader.readAsArrayBuffer(file);
-            reader.onload = async function() {
-                try {
-                    document.getElementById('loadingStatus').textContent = 'Erkenne Stil, Tempo & Noten...';
-                    const typedarray = new Uint8Array(this.result);
-                    
-                    let foundBpm = 120;
-                    let foundTimeSig = '4/4';
-                    let totalMeasures = 38;
-                    let detectedStyle = 'rock';
-                    let measureMarkers = [];
-
-                    try {
-                        const pdfDoc = await pdfjsLib.getDocument(typedarray).promise;
-                        let fullText = '';
-
-                        for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-                            const page = await pdfDoc.getPage(pageNum);
-                            const viewport = page.getViewport({ scale: 1.0 });
-                            const textContent = await page.getTextContent();
-                            
-                            const strings = textContent.items.map(item => item.str);
-                            fullText += ' ' + strings.join(' ');
-
-                            textContent.items.forEach(item => {
-                                const str = item.str.trim();
-                                const x = item.transform[4];
-                                const y = item.transform[5];
-
-                                if (/^\d{1,3}$/.test(str)) {
-                                    const val = parseInt(str);
-                                    if (val >= 2 && val <= 400 && y > 40 && y < viewport.height - 30) {
-                                        measureMarkers.push({ num: val, page: pageNum, x, y });
-                                    }
-                                }
-                            });
-                        }
-
-                        const bpmMatch = fullText.match(/(?:BPM|Tempo|♩|=|q)\s*[:=]?\s*(\d{2,3})/i);
-                        if (bpmMatch && parseInt(bpmMatch[1]) >= 40 && parseInt(bpmMatch[1]) <= 280) {
-                            foundBpm = parseInt(bpmMatch[1]);
-                        }
-
-                        const textLower = fullText.toLowerCase();
-                        if (/walzer|waltz|3\/4/.test(textLower)) {
-                            foundTimeSig = '3/4';
-                            detectedStyle = 'walzer';
-                        } else if (/polka/.test(textLower)) {
-                            foundTimeSig = '2/4';
-                            detectedStyle = 'polka';
-                        } else if (/marsch|march/.test(textLower)) {
-                            detectedStyle = 'marsch';
-                        } else if (/schlager|foxtrot|fox/.test(textLower)) {
-                            detectedStyle = 'schlager';
-                        } else if (/\b6\s*\/\s*8\b/.test(fullText)) {
-                            foundTimeSig = '6/8';
-                        } else if (/\b3\s*\/\s*4\b/.test(fullText)) {
-                            foundTimeSig = '3/4';
-                            detectedStyle = 'walzer';
-                        }
-
-                        if (measureMarkers.length > 0) {
-                            measureMarkers.sort((a, b) => a.num - b.num);
-                            const highestMarker = measureMarkers[measureMarkers.length - 1];
-                            let measuresPerSystem = 4;
-                            for (let i = 1; i < measureMarkers.length; i++) {
-                                const diff = measureMarkers[i].num - measureMarkers[i - 1].num;
-                                if (diff >= 2 && diff <= 8) { measuresPerSystem = diff; break; }
-                            }
-                            totalMeasures = highestMarker.num + (measuresPerSystem - 1);
-                        } else {
-                            totalMeasures = pdfDoc.numPages * 16;
-                        }
-
-                    } catch (pdfErr) {
-                        console.warn('PDF Fallback:', pdfErr);
-                    }
-
-                    detectedMetadata = {
-                        bpm: foundBpm,
-                        timeSig: foundTimeSig,
-                        totalMeasures: totalMeasures,
-                        style: detectedStyle,
-                        extractedPatterns: []
-                    };
-
-                    setTimeout(() => {
-                        loadingView.classList.add('hidden');
-                        showMetadataModal(detectedMetadata);
-                    }, 600);
-
-                } catch (err) {
-                    console.error(err);
-                    loadingView.classList.add('hidden');
-                    dropZone.classList.remove('hidden');
-                    alert('Fehler beim Verarbeiten der PDF.');
-                }
-            };
-        }
-
-        function showMetadataModal(meta) {
-            document.getElementById('modalBpm').value = meta.bpm;
-            document.getElementById('modalTimeSig').value = meta.timeSig;
-            document.getElementById('modalMeasures').value = meta.totalMeasures;
-            document.getElementById('modalStyle').value = meta.style;
-            metadataModal.classList.remove('hidden');
-        }
-
-        document.getElementById('applyMetaBtn').addEventListener('click', () => {
-            const bpm = parseInt(document.getElementById('modalBpm').value) || 120;
-            const timeSig = document.getElementById('modalTimeSig').value;
-            const totalMeasures = parseInt(document.getElementById('modalMeasures').value) || 32;
-            const style = document.getElementById('modalStyle').value;
-
-            document.getElementById('bpmInput').value = bpm;
-            document.getElementById('timeSig').value = timeSig;
-
-            songData = {
-                bpm,
-                timeSignature: timeSig,
-                totalMeasures,
-                style,
-                measures: []
-            };
-
-            buildStyleArrangement(songData);
-            updateUIStats();
-
-            document.getElementById('activeStyleDisplay').textContent = `Stil: ${style.toUpperCase()}`;
-            metadataModal.classList.add('hidden');
-            playerView.classList.remove('hidden');
-            resetFileBtn.classList.remove('hidden');
-        });
-
-        function buildStyleArrangement(config) {
-            config.measures = [];
-            const subs = config.timeSignature === '3/4' ? 6 : (config.timeSignature === '6/8' ? 6 : 8);
-
-            for (let m = 0; m < config.totalMeasures; m++) {
-                let steps = [];
-                const isFirst = (m === 0);
-                const isLast = (m === config.totalMeasures - 1);
-                const isFill = ((m + 1) % 8 === 0 && !isLast);
-
-                for (let s = 0; s < subs; s++) {
-                    let kick = false, snare = false, hat = false, crash = false, tom = false;
-
-                    if (isLast && s === 0) {
-                        kick = true; crash = true;
-                    } else if (config.style === 'walzer') {
-                        hat = true;
-                        if (s === 0) kick = true;
-                        if (s === 2 || s === 4) snare = true;
-                    } else if (config.style === 'polka') {
-                        hat = true;
-                        if (s === 0 || s === 4) kick = true;
-                        if (s === 2 || s === 6) snare = true;
-                    } else if (config.style === 'marsch') {
-                        hat = true;
-                        if (s === 0 || s === 4) kick = true;
-                        if (s === 2 || s === 6) snare = true;
-                        if (isFill && s >= 4) { snare = true; tom = true; }
-                    } else if (config.style === 'schlager') {
-                        if (s % 2 === 0) hat = true;
-                        if (s === 0 || s === 2 || s === 4 || s === 6) kick = true;
-                        if (s === 2 || s === 6) snare = true;
-                    } else {
-                        if (isFirst && s === 0) crash = true;
-                        if (!isFill || s < 4) hat = true;
-                        if (s === 0 || s === 4) kick = true;
-                        if (s === 2 || s === 6) snare = true;
-                        if (isFill && s >= 4) { snare = true; tom = true; }
-                    }
-                    steps.push({ kick, snare, hat, crash, tom });
-                }
-                config.measures.push(steps);
-            }
-        }
-
-        function updateUIStats() {
-            const startM = parseInt(document.getElementById('startMeasure').value) || 1;
-            document.getElementById('currentMeasureDisplay').textContent = Math.min(startM, songData.totalMeasures);
-            document.getElementById('totalMeasuresDisplay').textContent = songData.totalMeasures;
-            document.getElementById('songProgressBar').style.width = '0%';
-            renderBeatDots();
-        }
-
-        function renderBeatDots(activeBeat = -1, isCountIn = false) {
-            const container = document.getElementById('beatDots');
-            const timeSig = document.getElementById('timeSig').value;
-            const beats = timeSig === '3/4' ? 3 : (timeSig === '6/8' ? 6 : 4);
-            container.innerHTML = '';
-
-            for (let i = 0; i < beats; i++) {
-                const dot = document.createElement('div');
-                let cls = 'w-3.5 h-3.5 rounded-full transition-all duration-75 ';
-                if (i === activeBeat) {
-                    cls += isCountIn ? 'bg-amber-400 scale-125 shadow-md shadow-amber-400/50' : 'bg-rose-500 scale-125 shadow-md shadow-rose-500/50';
-                } else {
-                    cls += 'bg-slate-700';
-                }
-                dot.className = cls;
-                container.appendChild(dot);
-            }
-        }
-
-        resetFileBtn.addEventListener('click', () => {
-            stopAudio();
-            playerView.classList.add('hidden');
-            resetFileBtn.classList.add('hidden');
-            dropZone.classList.remove('hidden');
-            fileInput.value = '';
-        });
-
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                createRoomReverb();
-            }
-            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-        }
-
-        function createRoomReverb() {
-            const length = audioCtx.sampleRate * 0.4;
-            const impulse = audioCtx.createBuffer(2, length, audioCtx.sampleRate);
-            for (let c = 0; c < 2; c++) {
-                const data = impulse.getChannelData(c);
-                for (let i = 0; i < length; i++) {
-                    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 3);
-                }
-            }
-            reverbNode = audioCtx.createConvolver();
-            reverbNode.buffer = impulse;
-        }
-
-        function connectWithRoom(source, dryVal) {
-            const dry = audioCtx.createGain();
-            dry.gain.value = dryVal;
-            source.connect(dry);
-            dry.connect(audioCtx.destination);
-
-            const roomVol = parseFloat(document.getElementById('volRoom').value) * 0.3;
-            if (reverbNode && roomVol > 0) {
-                const wet = audioCtx.createGain();
-                wet.gain.value = dryVal * roomVol;
-                source.connect(reverbNode);
-                reverbNode.connect(wet);
-                wet.connect(audioCtx.destination);
-            }
-        }
-
-        function humanizedVol(baseVol) {
-            const humanizeFactor = parseFloat(document.getElementById('humanizeVal').value) || 0.5;
-            const variation = (Math.random() * 0.2 - 0.1) * humanizeFactor;
-            return Math.max(0.1, Math.min(1.0, baseVol * (1 + variation)));
-        }
-
-        function playKick(vol) {
-            if (vol <= 0) return;
-            const t = audioCtx.currentTime;
-            const v = humanizedVol(vol);
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(140, t);
-            osc.frequency.exponentialRampToValueAtTime(40, t + 0.12);
-            gain.gain.setValueAtTime(v, t);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-            osc.connect(gain);
-            connectWithRoom(gain, 1.0);
-            osc.start(t);
-            osc.stop(t + 0.25);
-        }
-
-        function playSnare(vol) {
-            if (vol <= 0) return;
-            const t = audioCtx.currentTime;
-            const v = humanizedVol(vol);
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(180, t);
-            osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
-            gain.gain.setValueAtTime(v * 0.4, t);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
-            osc.connect(gain);
-            connectWithRoom(gain, 0.8);
-            osc.start(t);
-            osc.stop(t + 0.12);
-
-            const bufSize = audioCtx.sampleRate * 0.18;
-            const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
-            const data = buf.getChannelData(0);
-            for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-            const noise = audioCtx.createBufferSource();
-            noise.buffer = buf;
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = 'bandpass';
-            filter.frequency.value = 1600;
-            const nGain = audioCtx.createGain();
-            nGain.gain.setValueAtTime(v * 0.7, t);
-            nGain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-            noise.connect(filter);
-            filter.connect(nGain);
-            connectWithRoom(nGain, 0.9);
-            noise.start(t);
-        }
-
-        function playTom(vol) {
-            if (vol <= 0) return;
-            const t = audioCtx.currentTime;
-            const v = humanizedVol(vol);
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(150, t);
-            osc.frequency.exponentialRampToValueAtTime(70, t + 0.2);
-            gain.gain.setValueAtTime(v * 0.8, t);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
-            osc.connect(gain);
-            connectWithRoom(gain, 1.0);
-            osc.start(t);
-            osc.stop(t + 0.22);
-        }
-
-        function playCymbal(vol, dur, hpFreq) {
-            if (vol <= 0) return;
-            const t = audioCtx.currentTime;
-            const v = humanizedVol(vol);
-            const ratios = [263, 400, 474, 587, 845];
-            const bp = audioCtx.createBiquadFilter();
-            bp.type = 'bandpass';
-            bp.frequency.value = 8000;
-            const hp = audioCtx.createBiquadFilter();
-            hp.type = 'highpass';
-            hp.frequency.value = hpFreq;
-            const master = audioCtx.createGain();
-            master.gain.setValueAtTime(v * 0.35, t);
-            master.gain.exponentialRampToValueAtTime(0.0008, t + dur);
-
-            ratios.forEach(f => {
-                const osc = audioCtx.createOscillator();
-                osc.type = 'square';
-                osc.frequency.value = f;
-                osc.connect(bp);
-                osc.start(t);
-                osc.stop(t + dur);
-            });
-            bp.connect(hp);
-            hp.connect(master);
-            connectWithRoom(master, 0.9);
-        }
-
-        function playHiHat(vol) { playCymbal(vol, 0.05, 6500); }
-        function playCrash(vol) { playCymbal(vol * 1.2, 1.2, 4000); }
-
-        function playMetronomeClick(isHigh) {
-            const t = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.frequency.setValueAtTime(isHigh ? 1300 : 900, t);
-            gain.gain.setValueAtTime(0.6, t);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start(t);
-            osc.stop(t + 0.04);
-        }
-
-        playBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                stopAudio();
-            } else {
-                startPlayback();
-            }
-        });
-
-        function stopAudio(finishedNaturally = false) {
-            isPlaying = false;
-            if (timerID) clearInterval(timerID);
-            playBtn.textContent = '▶';
-            playBtn.classList.remove('bg-amber-600', 'hover:bg-amber-500');
-            playBtn.classList.add('bg-rose-600', 'hover:bg-rose-500');
-            renderBeatDots(-1);
-
-            const badge = document.getElementById('statusBadge');
-            if (finishedNaturally) {
-                badge.textContent = 'Song beendet';
-                badge.className = 'bg-sky-500/10 text-sky-400 border border-sky-500/30 text-xs px-3 py-1 rounded-full font-semibold';
-                document.getElementById('songProgressBar').style.width = '100%';
-            } else {
-                badge.textContent = 'Gestoppt';
-                badge.className = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-3 py-1 rounded-full font-semibold';
-            }
-        }
-
-        function startPlayback() {
-            initAudio();
-            isPlaying = true;
-            playBtn.textContent = '⏹';
-            playBtn.classList.remove('bg-rose-600', 'hover:bg-rose-500');
-            playBtn.classList.add('bg-amber-600', 'hover:bg-amber-500');
-
-            const bpm = parseInt(document.getElementById('bpmInput').value) || 120;
-            const timeSig = document.getElementById('timeSig').value;
-            let startMeas = parseInt(document.getElementById('startMeasure').value) || 1;
-            if (startMeas < 1) startMeas = 1;
-            if (startMeas > songData.totalMeasures) startMeas = songData.totalMeasures;
-
-            const beatsPerMeasure = timeSig === '3/4' ? 3 : (timeSig === '6/8' ? 6 : 4);
-            const subsPerBeat = timeSig === '6/8' ? 1 : 2;
-            const intervalMs = (60 / bpm / subsPerBeat) * 1000;
-
-            let currentMeasureIdx = startMeas - 1;
-            let currentSubStep = 0;
-
-            let countInStep = 0;
-            const totalCountIn = beatsPerMeasure * subsPerBeat;
-
-            const badge = document.getElementById('statusBadge');
-            badge.textContent = 'Vorzählen...';
-            badge.className = 'bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-3 py-1 rounded-full font-semibold';
-
-            timerID = setInterval(() => {
-                if (!isPlaying) return;
-
-                if (countInStep < totalCountIn) {
-                    if (countInStep % subsPerBeat === 0) {
-                        const beat = Math.floor(countInStep / subsPerBeat);
-                        playMetronomeClick(beat === 0);
-                        renderBeatDots(beat, true);
-                    }
-                    countInStep++;
-                    return;
-                }
-
-                if (currentMeasureIdx >= songData.totalMeasures) {
-                    stopAudio(true);
-                    return;
-                }
-
-                if (currentSubStep === 0) {
-                    badge.textContent = 'Live Playing';
-                    badge.className = 'bg-rose-500/10 text-rose-400 border border-rose-500/30 text-xs px-3 py-1 rounded-full font-semibold';
-                    document.getElementById('currentMeasureDisplay').textContent = currentMeasureIdx + 1;
-                    const progress = ((currentMeasureIdx + 1) / songData.totalMeasures) * 100;
-                    document.getElementById('songProgressBar').style.width = `${progress}%`;
-                }
-
-                if (currentSubStep % subsPerBeat === 0) {
-                    const beat = Math.floor(currentSubStep / subsPerBeat);
-                    renderBeatDots(beat, false);
-                }
-
-                const measureSteps = songData.measures[currentMeasureIdx];
-                if (measureSteps && measureSteps[currentSubStep]) {
-                    const step = measureSteps[currentSubStep];
-                    const vKick = parseFloat(document.getElementById('volKick').value);
-                    const vSnare = parseFloat(document.getElementById('volSnare').value);
-                    const vHat = parseFloat(document.getElementById('volHat').value);
-
-                    if (step.kick) playKick(vKick);
-                    if (step.snare) playSnare(vSnare);
-                    if (step.tom) playTom(vSnare);
-                    if (step.hat) playHiHat(vHat);
-                    if (step.crash) playCrash(vHat);
-                }
-
-                currentSubStep++;
-                if (currentSubStep >= measureSteps.length) {
-                    currentSubStep = 0;
-                    currentMeasureIdx++;
-
-                    if (currentMeasureIdx >= songData.totalMeasures) {
-                        setTimeout(() => stopAudio(true), intervalMs * 2);
-                    }
-                }
-            }, intervalMs);
-        }
-    </script>
+    <div class="section-title"><div><h3>Erkannte Songstruktur</h3><p class="muted">Refrains spielen kräftiger, Strophen zurückhaltender.</p></div></div>
+    <div id="sectionTimeline" class="timeline"></div>
+
+    <div class="section-title"><div><h3>Song-Automation</h3><p class="muted">Tempo, Taktart und Form pro Takt – inklusive Ritardando.</p></div><button id="addEventBtn" class="btn secondary small">+ Wechsel</button></div>
+    <div id="automationRows" class="automation"></div>
+    <div class="sample-strip"><div><strong>Schluss-Ritardando</strong><p class="muted">Tempo über die letzten Takte natürlich reduzieren.</p></div><div class="switch"><input id="ritEnabled" type="checkbox"><label for="ritBars" class="muted">letzte</label><select id="ritBars"><option>2</option><option selected>4</option><option>8</option></select><label for="ritTo" class="muted">Takte auf</label><input id="ritTo" type="number" min="35" max="95" value="65" style="width:62px"><span class="muted">%</span></div></div>
+
+    <div class="sample-strip"><div><strong id="sampleStatus">Echte Drum-Samples werden beim ersten Start geladen.</strong><p class="muted">Velocity-Layer + Round Robin; eigener Sample-Satz anhand der Dateinamen möglich.</p></div><button id="sampleUploadBtn" class="btn secondary small">Eigene Samples laden</button><input id="sampleInput" type="file" accept="audio/*" multiple hidden></div>
+    <div class="notice" style="margin-top:15px">Tipp: Eigene Dateien mit <b>kick</b>, <b>snare</b>, <b>hihat/hat</b>, <b>tom</b>, <b>ride</b> oder <b>crash</b> im Namen werden automatisch zugeordnet und als weitere Round-Robin-Varianten verwendet.</div>
+  </section>
+</main>
+<footer class="footer">OAM Drum AI © 2026 · Natural Performance Engine · Verarbeitung lokal im Browser</footer>
+
+<div id="metaModal" class="modal hidden">
+  <div class="modal-card"><h2>Analyse prüfen</h2><p class="muted">Die erkannten Werte können vor dem Aufbau des Drum-Arrangements angepasst werden.</p>
+    <div class="modal-grid">
+      <div class="control"><label for="modalBpm">Starttempo</label><input id="modalBpm" type="number" min="30" max="300"></div>
+      <div class="control"><label for="modalMeter">Starttakt</label><select id="modalMeter"><option>4/4</option><option>3/4</option><option>2/4</option><option>6/8</option><option>12/8</option><option>5/4</option><option>7/8</option></select></div>
+      <div class="control"><label for="modalMeasures">Takte</label><input id="modalMeasures" type="number" min="1" max="2000"></div>
+      <div class="control"><label for="modalStyle">Stil</label><select id="modalStyle"></select></div>
+    </div>
+    <div class="analysis-cards"><div><strong id="analysisSource">Quelle</strong><span>Dateityp</span></div><div><strong id="analysisStructure">Songteile</strong><span>Struktur</span></div><div><strong id="analysisChanges">Automation</strong><span>Tempo / Takt</span></div></div>
+    <p id="analysisNote" class="notice" style="margin:13px 0 0"></p>
+    <div class="modal-actions"><button id="cancelMetaBtn" class="btn secondary">Abbrechen</button><button id="applyMetaBtn" class="btn primary">Arrangement erstellen</button></div>
+  </div>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+'use strict';
+if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const $=id=>document.getElementById(id);
+const STYLE_PRESETS={
+ auto:{label:'Auto / erkannt',meter:null,bpm:120,swing:0},rock:{label:'Rock',meter:'4/4',bpm:122,swing:0},pop:{label:'Pop',meter:'4/4',bpm:118,swing:0},ballad:{label:'Ballade',meter:'4/4',bpm:74,swing:0},ballad68:{label:'6/8-Ballade',meter:'6/8',bpm:62,swing:8},jazz:{label:'Jazz / Swing',meter:'4/4',bpm:138,swing:58},blues:{label:'Blues Shuffle',meter:'12/8',bpm:92,swing:62},funk:{label:'Funk',meter:'4/4',bpm:104,swing:12},disco:{label:'Disco',meter:'4/4',bpm:122,swing:0},reggae:{label:'Reggae',meter:'4/4',bpm:78,swing:6},walzer:{label:'Walzer',meter:'3/4',bpm:92,swing:0},polka:{label:'Polka',meter:'2/4',bpm:124,swing:0},marsch:{label:'Marsch',meter:'2/4',bpm:112,swing:0},schlager:{label:'Schlager',meter:'4/4',bpm:124,swing:0},bossa:{label:'Bossa Nova',meter:'4/4',bpm:126,swing:5},samba:{label:'Samba',meter:'2/4',bpm:102,swing:8},metal:{label:'Metal',meter:'4/4',bpm:155,swing:0}
+};
+const SECTION_LABELS={intro:'Intro',verse:'Strophe',chorus:'Refrain',bridge:'Bridge',outro:'Schluss',solo:'Solo',interlude:'Zwischenspiel'};
+const SECTION_INTENSITY={intro:.72,verse:.84,chorus:1.12,bridge:.94,outro:.76,solo:1.04,interlude:.88};
+let pendingAnalysis=null,sourceFileName='',isPlaying=false,audioCtx=null,masterNode=null,compressorNode=null,reverbNode=null,schedulerTimer=null,nextNoteTime=0,playMeasure=0,playStep=0,countInSteps=0;
+let song={totalMeasures:32,bpm:120,timeSignature:'4/4',style:'rock',tempoMap:[{measure:1,bpm:120}],timeSigMap:[{measure:1,meter:'4/4'}],sections:[],density:[],patterns:[],analysis:''};
+const sampleBank={kick:[],snare:[],hat:[],tom:[],ride:[],crash:[]},roundRobin={};let samplesLoading=null;
+
+function init(){
+ const options=Object.entries(STYLE_PRESETS).map(([v,s])=>`<option value="${v}">${s.label}</option>`).join('');$('styleSelect').innerHTML=options;$('modalStyle').innerHTML=options;
+ ['humanize','swing','dynamics','ghostNotes'].forEach(id=>$(id).addEventListener('input',()=>{const out={humanize:'humanizeOut',swing:'swingOut',dynamics:'dynamicsOut',ghostNotes:'ghostOut'}[id];$(out).textContent=$(id).value+'%'}));
+ $('dropZone').onclick=()=> $('fileInput').click();$('dropZone').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('fileInput').click()}};
+ ['dragenter','dragover'].forEach(ev=>$('dropZone').addEventListener(ev,e=>{e.preventDefault();$('dropZone').classList.add('drag')}));['dragleave','drop'].forEach(ev=>$('dropZone').addEventListener(ev,e=>{e.preventDefault();$('dropZone').classList.remove('drag')}));
+ $('dropZone').addEventListener('drop',e=>e.dataTransfer.files[0]&&handleFile(e.dataTransfer.files[0]));$('fileInput').onchange=e=>e.target.files[0]&&handleFile(e.target.files[0]);
+ $('applyMetaBtn').onclick=applyMetadata;$('cancelMetaBtn').onclick=resetApp;$('resetBtn').onclick=resetApp;$('playBtn').onclick=()=>isPlaying?stopPlayback():startPlayback();
+ $('styleSelect').onchange=()=>{applyStyleDefaults($('styleSelect').value,false);buildArrangement();updateStyleText()};$('timeSig').onchange=()=>{setMapEvent(song.timeSigMap,1,'meter',$('timeSig').value);buildArrangement();renderAutomation();renderBeatDots()};$('bpmInput').onchange=()=>{setMapEvent(song.tempoMap,1,'bpm',clamp(+$('bpmInput').value,30,300));renderAutomation()};
+ $('addEventBtn').onclick=()=>{song.sections.push({measure:Math.min(song.totalMeasures,Math.max(1,Math.ceil(song.totalMeasures/2))),type:'bridge'});normalizeSongMaps();renderAutomation();renderTimeline()};
+ $('automationRows').addEventListener('change',readAutomationRows);$('automationRows').addEventListener('click',e=>{if(e.target.dataset.remove!==undefined){const i=+e.target.dataset.remove;removeAutomationEvent(i)}});
+ $('sampleUploadBtn').onclick=()=>$('sampleInput').click();$('sampleInput').onchange=e=>loadUserSamples([...e.target.files]);
+ $('ritEnabled').onchange=buildArrangement;$('ritBars').onchange=buildArrangement;$('ritTo').onchange=buildArrangement;
+ renderBeatDots();
+}
+function toast(msg){$('toast').textContent=msg;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),4200)}
+function clamp(n,a,b){return Math.max(a,Math.min(b,n))}function uniqueSorted(arr,key='measure'){return [...arr].sort((a,b)=>a[key]-b[key]).filter((x,i,a)=>!i||x[key]!==a[i-1][key])}
+function showLoading(title,status){$('dropZone').classList.add('hidden');$('playerView').classList.add('hidden');$('loadingView').classList.remove('hidden');$('loadingTitle').textContent=title;$('loadingStatus').textContent=status}
+async function handleFile(file){sourceFileName=file.name;const ext=file.name.split('.').pop().toLowerCase();if(!['pdf','xml','musicxml','mid','midi'].includes(ext)){toast('Bitte PDF, MusicXML oder MIDI auswählen.');return}showLoading('Analysiere '+file.name,'Lese musikalische Struktur …');try{const buffer=await file.arrayBuffer();if(ext==='pdf')pendingAnalysis=await analyzePDF(buffer);else if(['xml','musicxml'].includes(ext))pendingAnalysis=analyzeMusicXML(new TextDecoder().decode(buffer));else pendingAnalysis=analyzeMIDI(buffer);openMetaModal(pendingAnalysis,ext)}catch(err){console.error(err);$('loadingView').classList.add('hidden');$('dropZone').classList.remove('hidden');toast('Analyse fehlgeschlagen: '+err.message)}}
+function baseAnalysis(){return{bpm:120,timeSignature:'4/4',totalMeasures:32,style:'rock',tempoMap:[],timeSigMap:[],sections:[],density:[],source:'',note:'',ritardando:false}}
+function detectStyle(text,meter='4/4'){const t=(text||'').toLowerCase();const rules=[['walzer',/walzer|waltz|valse/],['bossa',/bossa/],['samba',/samba/],['reggae',/reggae|ska/],['funk',/funk/],['disco',/disco/],['metal',/metal|heavy/],['jazz',/jazz|swing/],['blues',/blues|shuffle/],['polka',/polka/],['marsch',/marsch|march/],['schlager',/schlager|foxtrot/],['ballad68',/6\s*\/\s*8|six.eight/],['ballad',/ballad|adagio/],['pop',/\bpop\b/],['rock',/rock/]];for(const [s,r] of rules)if(r.test(t))return s;if(meter==='3/4')return'walzer';if(meter==='6/8')return'ballad68';if(meter==='12/8')return'blues';return'rock'}
+function meterFromText(text){const m=(text||'').match(/\b(2|3|4|5|6|7|9|12)\s*\/\s*(2|4|8|16)\b/);return m?m[1]+'/'+m[2]:'4/4'}
+function parseCommonText(text,totalMeasures){const out={tempoMap:[],timeSigMap:[],sections:[],ritardando:/rit\.?|ritardando|rallentando/i.test(text)},nearMeasure=(index,after=0)=>{const tail=text.slice(index+after,index+after+45).match(/(?:takt|bar|measure)\s*(\d{1,4})/i);if(tail)return+tail[1];const head=text.slice(Math.max(0,index-55),index),matches=[...head.matchAll(/(?:takt|bar|measure)\s*(\d{1,4})/gi)];return matches.length?+matches.at(-1)[1]:1};let m;const bpm=/(?:bpm|tempo|♩|q)\s*[:=]?\s*(\d{2,3})/gi;while((m=bpm.exec(text)))out.tempoMap.push({measure:clamp(nearMeasure(m.index),1,totalMeasures),bpm:clamp(+m[1],30,300)});const ts=/\b(2|3|4|5|6|7|9|12)\s*\/\s*(2|4|8|16)\b/gi;while((m=ts.exec(text)))out.timeSigMap.push({measure:clamp(nearMeasure(m.index),1,totalMeasures),meter:m[1]+'/'+m[2]});const sec=/\b(intro|strophe|verse|refrain|chorus|bridge|solo|interlude|zwischenspiel|outro|coda|schluss)\b/gi;while((m=sec.exec(text)))out.sections.push({measure:clamp(nearMeasure(m.index,m[0].length),1,totalMeasures),type:normalizeSection(m[1])});out.tempoMap=uniqueSorted(out.tempoMap);out.timeSigMap=uniqueSorted(out.timeSigMap);out.sections=uniqueSorted(out.sections);return out}
+function normalizeSection(s){s=(s||'').toLowerCase();if(/strophe|verse/.test(s))return'verse';if(/refrain|chorus/.test(s))return'chorus';if(/outro|coda|schluss/.test(s))return'outro';if(/zwischenspiel|interlude/.test(s))return'interlude';if(/solo/.test(s))return'solo';if(/bridge/.test(s))return'bridge';return'intro'}
+function heuristicSections(n,density=[]){if(n<=8)return[{measure:1,type:'intro'},{measure:Math.max(2,n-1),type:'outro'}];const points=[{p:1,type:'intro'},{p:Math.min(5,Math.max(2,Math.round(n*.1))),type:'verse'},{p:Math.round(n*.32),type:'chorus'},{p:Math.round(n*.5),type:'verse'},{p:Math.round(n*.67),type:'chorus'}];if(n>=24)points.push({p:Math.round(n*.8),type:'bridge'});points.push({p:Math.max(2,n-Math.max(1,Math.round(n*.08))),type:'outro'});return uniqueSorted(points.map(x=>({measure:clamp(x.p,1,n),type:x.type})))}
+async function analyzePDF(buffer){if(!window.pdfjsLib)throw new Error('PDF.js konnte nicht geladen werden.');const pdf=await pdfjsLib.getDocument({data:new Uint8Array(buffer)}).promise;let text='',markers=[],scanStats={staffGroups:0,barlines:0,noteheads:0,pages:0};for(let p=1;p<=pdf.numPages;p++){ $('loadingStatus').textContent=`PDF-Seite ${p}/${pdf.numPages}: Text und Taktmarken`;const page=await pdf.getPage(p),tc=await page.getTextContent();text+=' '+tc.items.map(x=>x.str).join(' ');tc.items.forEach(x=>{const s=x.str.trim();if(/^\d{1,4}$/.test(s)){const n=+s;if(n>1&&n<2000)markers.push(n)}})}let scanned=text.replace(/\s/g,'').length<80;if(scanned){$('loadingStatus').textContent='Gescanntes PDF erkannt: suche Notensysteme, Taktstriche und Notenköpfe …';scanStats=await opticalMusicScan(pdf);if(window.Tesseract&&pdf.numPages){try{$('loadingStatus').textContent='OCR liest Tempo-, Takt- und Formangaben …';const page=await pdf.getPage(1),vp=page.getViewport({scale:1.6}),canvas=document.createElement('canvas');canvas.width=vp.width;canvas.height=vp.height;await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;const r=await Tesseract.recognize(canvas,'deu+eng',{logger:x=>{if(x.progress)$('loadingStatus').textContent=`OCR ${Math.round(x.progress*100)}% · ${x.status}`}});text+=' '+r.data.text}catch(e){console.warn('OCR text fallback',e)}}}
+ const maxMarker=markers.length?Math.max(...markers):0;let total=maxMarker?maxMarker+3:Math.max(8,Math.min(pdf.numPages*64,scanned&&scanStats.barlines?scanStats.barlines-pdf.numPages:pdf.numPages*16));const common=parseCommonText(text,total),meter=(common.timeSigMap[0]?.meter)||meterFromText(text),bpm=common.tempoMap[0]?.bpm||+(text.match(/(?:bpm|tempo|♩|q)\s*[:=]?\s*(\d{2,3})/i)?.[1]||120);return{...baseAnalysis(),bpm,timeSignature:meter,totalMeasures:total,style:detectStyle(text,meter),tempoMap:common.tempoMap.length?common.tempoMap:[{measure:1,bpm}],timeSigMap:common.timeSigMap.length?common.timeSigMap:[{measure:1,meter}],sections:common.sections.length?common.sections:heuristicSections(total),source:scanned?'PDF · optische Notenerkennung':'PDF · eingebetteter Notentext',note:scanned?`${scanStats.staffGroups} Notensysteme, ${scanStats.barlines} mögliche Taktstriche und ${scanStats.noteheads} Notenköpfe optisch erkannt.`:'Tempo, Taktzahlen, Stilwörter und Formmarken wurden aus dem PDF-Text ausgewertet.',ritardando:common.ritardando}}
+async function opticalMusicScan(pdf){let stats={staffGroups:0,barlines:0,noteheads:0,pages:0};for(let p=1;p<=Math.min(pdf.numPages,4);p++){const page=await pdf.getPage(p),vp=page.getViewport({scale:1.35}),c=document.createElement('canvas');c.width=Math.floor(vp.width);c.height=Math.floor(vp.height);const ctx=c.getContext('2d',{willReadFrequently:true});await page.render({canvasContext:ctx,viewport:vp}).promise;const im=ctx.getImageData(0,0,c.width,c.height),w=c.width,h=c.height,row=new Uint32Array(h),col=new Uint32Array(w);for(let y=0;y<h;y+=2)for(let x=0;x<w;x+=2){const i=(y*w+x)*4,gray=(im.data[i]*.3+im.data[i+1]*.59+im.data[i+2]*.11);if(gray<105){row[y]++;col[x]++}}const lines=[];for(let y=1;y<h-1;y++)if(row[y]>w*.16&&row[y]>=row[y-1]&&row[y]>=row[y+1]&&(lines.at(-1)??-9)<y-3)lines.push(y);stats.staffGroups+=Math.floor(lines.length/5);stats.barlines+=[...col].filter(v=>v>h*.08).length/2;let heads=0;for(let y=3;y<h-3;y+=4)for(let x=3;x<w-3;x+=4){let dark=0;for(let yy=-2;yy<=2;yy++)for(let xx=-3;xx<=3;xx++){const i=((y+yy)*w+x+xx)*4;if(im.data[i]<90)dark++}if(dark>20&&dark<34)heads++}stats.noteheads+=Math.round(heads/3);stats.pages++}stats.barlines=Math.round(stats.barlines);return stats}
+function analyzeMusicXML(xml){const doc=new DOMParser().parseFromString(xml,'application/xml');if(doc.querySelector('parsererror'))throw new Error('Ungültige oder komprimierte MXL-Datei. Bitte unkomprimiertes MusicXML verwenden.');const firstPart=doc.querySelector('part');if(!firstPart)throw new Error('Keine MusicXML-Partitur gefunden.');const raw=[...firstPart.children].filter(x=>x.localName==='measure'),measureInfo=[],tempoRaw=[],meterRaw=[],sectionsRaw=[];let bpm=120,meter='4/4',repeatStart=0,order=[];raw.forEach((m,i)=>{const number=i+1,beats=m.querySelector('attributes time beats')?.textContent,beatType=m.querySelector('attributes time beat-type')?.textContent;if(beats&&beatType){meter=beats+'/'+beatType;meterRaw.push({raw:number,meter})}const tempo=+(m.querySelector('sound[tempo]')?.getAttribute('tempo')||m.querySelector('metronome per-minute')?.textContent||0);if(tempo){bpm=tempo;tempoRaw.push({raw:number,bpm})}const words=[...m.querySelectorAll('rehearsal,words')].map(x=>x.textContent.trim()).join(' '),sec=words.match(/intro|strophe|verse|refrain|chorus|bridge|solo|interlude|zwischenspiel|outro|coda|schluss/i);if(sec)sectionsRaw.push({raw:number,type:normalizeSection(sec[0])});const notes=[...m.querySelectorAll('note:not([print-object="no"])')].filter(n=>!n.querySelector('rest')),dyn=m.querySelector('dynamics')?.textContent?.trim()||'',forward=!!m.querySelector('repeat[direction="forward"]'),back=!!m.querySelector('repeat[direction="backward"]');measureInfo.push({notes:notes.length,dyn,words,forward,back});if(forward)repeatStart=i;order.push(i);if(back){for(let r=repeatStart;r<=i;r++)order.push(r)}});if(!order.length)order=raw.map((_,i)=>i);const mapRawToPlay=(r)=>{const idx=order.indexOf(r-1);return idx<0?r:idx+1},total=order.length;const tempoMap=tempoRaw.map(x=>({measure:mapRawToPlay(x.raw),bpm:x.bpm})),timeSigMap=meterRaw.map(x=>({measure:mapRawToPlay(x.raw),meter:x.meter})),sections=sectionsRaw.map(x=>({measure:mapRawToPlay(x.raw),type:x.type})),density=order.map(i=>measureInfo[i].notes),allText=doc.documentElement.textContent,rit=/rit\.?|ritardando|rallentando/i.test(allText);return{...baseAnalysis(),bpm:tempoMap[0]?.bpm||bpm,timeSignature:timeSigMap[0]?.meter||meter,totalMeasures:total,style:detectStyle(allText,timeSigMap[0]?.meter||meter),tempoMap:tempoMap.length?tempoMap:[{measure:1,bpm}],timeSigMap:timeSigMap.length?timeSigMap:[{measure:1,meter}],sections:sections.length?sections:heuristicSections(total,density),density,source:'MusicXML · Noten, Dynamik und Wiederholungen',note:`${raw.length} notierte Takte; Wiederholungen ergeben ${total} Wiedergabetakte. ${density.reduce((a,b)=>a+b,0)} klingende Noten wurden für die Dichtekurve ausgewertet.`,ritardando:rit}}
+function readVar(data,state){let v=0,b;do{b=data[state.i++];v=(v<<7)|(b&127)}while(b&128);return v}
+function readText(data,start,len){return new TextDecoder('latin1').decode(data.slice(start,start+len))}
+function analyzeMIDI(buffer){const d=new Uint8Array(buffer),dv=new DataView(buffer);if(readText(d,0,4)!=='MThd')throw new Error('Ungültige MIDI-Datei.');const tracks=dv.getUint16(10),ppq=dv.getUint16(12)&0x7fff;if(!ppq)throw new Error('SMPTE-MIDI wird noch nicht unterstützt.');let off=8+dv.getUint32(4),maxTick=0,tempos=[],meters=[],markers=[],notes=[];for(let tr=0;tr<tracks;tr++){if(readText(d,off,4)!=='MTrk')break;const len=dv.getUint32(off+4),end=off+8+len,s={i:off+8};let tick=0,running=0;while(s.i<end){tick+=readVar(d,s);let st=d[s.i++];if(st<128){s.i--;st=running}else running=st;if(st===0xff){const type=d[s.i++],n=readVar(d,s),start=s.i;if(type===0x51&&n===3)tempos.push({tick,bpm:Math.round(60000000/((d[start]<<16)|(d[start+1]<<8)|d[start+2]))});else if(type===0x58&&n>=2)meters.push({tick,meter:d[start]+'/'+(2**d[start+1])});else if([1,3,5,6].includes(type))markers.push({tick,text:readText(d,start,n)});s.i+=n}else if(st===0xf0||st===0xf7){s.i+=readVar(d,s)}else{const hi=st&0xf0,ch=st&15,a=d[s.i++],two=!([0xc0,0xd0].includes(hi)),b=two?d[s.i++]:0;if(hi===0x90&&b>0)notes.push({tick,ch,note:a,vel:b})}maxTick=Math.max(maxTick,tick)}off=end}tempos.sort((a,b)=>a.tick-b.tick);meters.sort((a,b)=>a.tick-b.tick);if(!meters.length)meters=[{tick:0,meter:'4/4'}];const tickToMeasure=t=>{let measure=1,lastTick=0,current=meters[0].meter;for(const ev of meters){if(ev.tick>t)break;const [n,den]=current.split('/').map(Number),tpm=ppq*n*4/den;measure+=(ev.tick-lastTick)/tpm;lastTick=ev.tick;current=ev.meter}const [n,den]=current.split('/').map(Number);return Math.floor(measure+(t-lastTick)/(ppq*n*4/den))};const total=Math.max(1,tickToMeasure(maxTick)+1),tempoMap=(tempos.length?tempos:[{tick:0,bpm:120}]).map(x=>({measure:tickToMeasure(x.tick),bpm:x.bpm})),timeSigMap=meters.map(x=>({measure:tickToMeasure(x.tick),meter:x.meter})),density=Array(total).fill(0);notes.forEach(n=>density[clamp(tickToMeasure(n.tick)-1,0,total-1)]+=n.ch===9?2:1);const sections=markers.map(m=>({measure:tickToMeasure(m.tick),type:normalizeSection(m.text)})).filter((x,i)=>/intro|verse|strophe|chorus|refrain|bridge|solo|interlude|outro|coda|schluss/i.test(markers[i].text)),text=markers.map(x=>x.text).join(' ');return{...baseAnalysis(),bpm:tempoMap[0].bpm,timeSignature:timeSigMap[0].meter,totalMeasures:total,style:detectStyle(sourceFileName+' '+text,timeSigMap[0].meter),tempoMap, timeSigMap,sections:sections.length?sections:heuristicSections(total,density),density,source:'MIDI · Events und Marker',note:`${tracks} Spuren, ${notes.length} Note-On-Ereignisse, ${tempoMap.length} Tempo- und ${timeSigMap.length} Taktart-Ereignisse analysiert.`,ritardando:tempoMap.length>1&&tempoMap.at(-1).bpm<tempoMap.at(-2).bpm}}
+function openMetaModal(a,ext){$('loadingView').classList.add('hidden');$('modalBpm').value=Math.round(a.bpm);$('modalMeter').value=a.timeSignature;$('modalMeasures').value=a.totalMeasures;$('modalStyle').value=a.style;$('analysisSource').textContent=a.source;$('analysisStructure').textContent=a.sections.length+' Songteile';$('analysisChanges').textContent=a.tempoMap.length+' Tempo · '+a.timeSigMap.length+' Takt';$('analysisNote').textContent=a.note;$('metaModal').classList.remove('hidden')}
+function applyMetadata(){const a=pendingAnalysis;if(!a)return;song={...a,bpm:clamp(+$('modalBpm').value,30,300),timeSignature:$('modalMeter').value,totalMeasures:clamp(+$('modalMeasures').value,1,2000),style:$('modalStyle').value};setMapEvent(song.tempoMap,1,'bpm',song.bpm);setMapEvent(song.timeSigMap,1,'meter',song.timeSignature);if(!song.sections.length)song.sections=heuristicSections(song.totalMeasures,song.density);normalizeSongMaps();$('bpmInput').value=song.bpm;$('timeSig').value=song.timeSignature;$('styleSelect').value=song.style;$('ritEnabled').checked=!!song.ritardando;$('fileName').textContent=sourceFileName;$('analysisInfo').textContent=song.source+' · '+song.note;$('metaModal').classList.add('hidden');$('playerView').classList.remove('hidden');$('resetBtn').classList.remove('hidden');$('totalMeasures').textContent=song.totalMeasures;$('startMeasure').max=song.totalMeasures;applyStyleDefaults(song.style,true);buildArrangement();renderTimeline();renderAutomation();renderBeatDots();updateStyleText();scrollTo({top:0,behavior:'smooth'})}
+function applyStyleDefaults(style,preserveTempo){const p=STYLE_PRESETS[style];if(!p)return;if(p.meter){song.timeSignature=p.meter;$('timeSig').value=p.meter;setMapEvent(song.timeSigMap,1,'meter',p.meter)}if(!preserveTempo&&p.bpm){song.bpm=p.bpm;$('bpmInput').value=p.bpm;setMapEvent(song.tempoMap,1,'bpm',p.bpm)}$('swing').value=p.swing||0;$('swingOut').textContent=(p.swing||0)+'%'}
+function setMapEvent(map,measure,key,value){const x=map.find(e=>e.measure===measure);if(x)x[key]=value;else map.push({measure,[key]:value});map.sort((a,b)=>a.measure-b.measure)}
+function normalizeSongMaps(){song.tempoMap=uniqueSorted(song.tempoMap.filter(x=>x.measure>=1&&x.measure<=song.totalMeasures));song.timeSigMap=uniqueSorted(song.timeSigMap.filter(x=>x.measure>=1&&x.measure<=song.totalMeasures));song.sections=uniqueSorted(song.sections.filter(x=>x.measure>=1&&x.measure<=song.totalMeasures));if(!song.tempoMap.some(x=>x.measure===1))song.tempoMap.unshift({measure:1,bpm:song.bpm});if(!song.timeSigMap.some(x=>x.measure===1))song.timeSigMap.unshift({measure:1,meter:song.timeSignature});if(!song.sections.some(x=>x.measure===1))song.sections.unshift({measure:1,type:'intro'})}
+function valueAt(map,measure,key){let v=map[0]?.[key];for(const e of map){if(e.measure>measure)break;v=e[key]}return v}
+function renderTimeline(){normalizeSongMaps();const box=$('sectionTimeline');box.innerHTML='';song.sections.forEach((s,i)=>{const end=(song.sections[i+1]?.measure||song.totalMeasures+1),len=Math.max(1,end-s.measure),div=document.createElement('div');div.className='segment section-'+s.type;div.style.flex=String(len);div.innerHTML=`<strong>${SECTION_LABELS[s.type]||s.type}</strong><span>T. ${s.measure}–${end-1}</span>`;box.appendChild(div)})}
+function combinedEvents(){const measures=new Set([1,...song.sections.map(x=>x.measure),...song.tempoMap.map(x=>x.measure),...song.timeSigMap.map(x=>x.measure)]);return[...measures].sort((a,b)=>a-b).map(m=>({measure:m,type:song.sections.find(x=>x.measure===m)?.type||'',bpm:song.tempoMap.find(x=>x.measure===m)?.bpm||'',meter:song.timeSigMap.find(x=>x.measure===m)?.meter||''}))}
+function renderAutomation(){const events=combinedEvents();$('automationRows').innerHTML=events.map((e,i)=>`<div class="event-row" data-index="${i}"><input class="event-measure" type="number" min="1" max="${song.totalMeasures}" value="${e.measure}" title="Takt"><select class="event-section"><option value="">— Songteil —</option>${Object.entries(SECTION_LABELS).map(([v,l])=>`<option value="${v}" ${e.type===v?'selected':''}>${l}</option>`).join('')}</select><input class="event-tempo" type="number" min="30" max="300" value="${e.bpm}" placeholder="BPM"><select class="event-meter"><option value="">— Takt —</option>${['4/4','3/4','2/4','6/8','12/8','5/4','7/8'].map(v=>`<option ${e.meter===v?'selected':''}>${v}</option>`).join('')}</select><button class="icon-btn" data-remove="${i}" title="Entfernen">×</button></div>`).join('')}
+function readAutomationRows(){const rows=[...$('automationRows').children],sections=[],tempos=[],meters=[];rows.forEach(r=>{const m=clamp(+r.querySelector('.event-measure').value,1,song.totalMeasures),sec=r.querySelector('.event-section').value,bpm=+r.querySelector('.event-tempo').value,meter=r.querySelector('.event-meter').value;if(sec)sections.push({measure:m,type:sec});if(bpm)tempos.push({measure:m,bpm:clamp(bpm,30,300)});if(meter)meters.push({measure:m,meter})});song.sections=sections;song.tempoMap=tempos;song.timeSigMap=meters;normalizeSongMaps();song.bpm=valueAt(song.tempoMap,1,'bpm');song.timeSignature=valueAt(song.timeSigMap,1,'meter');$('bpmInput').value=song.bpm;$('timeSig').value=song.timeSignature;buildArrangement();renderTimeline();renderAutomation()}
+function removeAutomationEvent(index){const ev=combinedEvents()[index];if(!ev||ev.measure===1){toast('Der Startwert in Takt 1 bleibt erhalten.');return}song.sections=song.sections.filter(x=>x.measure!==ev.measure);song.tempoMap=song.tempoMap.filter(x=>x.measure!==ev.measure);song.timeSigMap=song.timeSigMap.filter(x=>x.measure!==ev.measure);normalizeSongMaps();buildArrangement();renderTimeline();renderAutomation()}
+function meterSteps(meter){const [n,d]=meter.split('/').map(Number);return d===8?n:n*2}function sectionAt(m){return valueAt(song.sections,m,'type')||'verse'}
+function buildArrangement(){normalizeSongMaps();song.patterns=[];for(let m=1;m<=song.totalMeasures;m++){const meter=valueAt(song.timeSigMap,m,'meter'),steps=meterSteps(meter),style=song.style==='auto'?detectStyle('',meter):song.style,section=sectionAt(m),intensity=SECTION_INTENSITY[section]||.9,arr=Array.from({length:steps},()=>[]),add=(s,inst,v)=>{if(s>=0&&s<steps)arr[s].push({inst,vel:clamp(v*intensity,.05,1)})};const q=d=>Math.round(d*(meter.endsWith('/8')?1:2));
+  if(style==='walzer'){for(let s=0;s<steps;s+=2)add(s,'hat',s?0.42:0.55);add(0,'kick',.86);add(q(1),'snare',.5);add(q(2),'snare',.56)}
+  else if(style==='polka'||style==='marsch'){for(let s=0;s<steps;s++)if(s%2===0)add(s,'hat',.48);add(0,'kick',.9);add(q(1),'snare',.75);if(style==='marsch')for(let s=1;s<steps;s+=2)add(s,'snare',.24)}
+  else if(style==='ballad68'||style==='blues'){for(let s=0;s<steps;s++)add(s,style==='blues'?'ride':'hat',s%3===0?.62:.34);add(0,'kick',.86);add(Math.min(3,steps-1),'snare',.78);if(steps>6){add(6,'kick',.6);add(9,'snare',.72)}}
+  else if(style==='jazz'){for(let s=0;s<steps;s++)if(s%2===0||s%4===3)add(s,'ride',s%4===0?.68:.48);add(0,'kick',.35);add(q(2),'snare',.42)}
+  else if(style==='reggae'){for(let s=0;s<steps;s+=2)add(s,'hat',.5);add(q(2),'kick',.68);add(q(2),'snare',.78)}
+  else if(style==='bossa'||style==='samba'){for(let s=0;s<steps;s++)add(s,'hat',s%2?.32:.48);add(0,'kick',.72);add(Math.min(3,steps-1),'kick',.48);add(q(2),'snare',.38);if(style==='samba')add(q(1),'snare',.48)}
+  else if(style==='funk'){for(let s=0;s<steps;s++)if(s%2===0)add(s,'hat',s%4===0?.58:.4);add(0,'kick',.94);add(Math.min(3,steps-1),'kick',.58);add(q(2),'snare',.88);if(steps>7)add(7,'kick',.62)}
+  else{for(let s=0;s<steps;s++)if(s%2===0)add(s,'hat',s%4===0?.58:.43);add(0,'kick',.96);add(q(2),'snare',.9);if(style==='disco'||style==='schlager'){for(let s=0;s<steps;s+=2)add(s,'kick',.72)}else add(q(2), 'kick',.48);if(style==='metal'){for(let s=0;s<steps;s++)if(s%2===0)add(s,'kick',.68);add(q(1),'snare',.82);add(q(3),'snare',.88)}}
+  if(section==='chorus'&&m===song.sections.find(x=>x.measure===m)?.measure)add(0,'crash',.95);if(m===1)add(0,'crash',.82);const fillSetting=$('fillEvery').value,fillN=fillSetting==='style'?(style==='jazz'?16:8):+fillSetting;if(fillN&&(m%fillN===0)&&m<song.totalMeasures){for(let s=Math.max(0,steps-4),j=0;s<steps;s++,j++)add(s,'tom',.48+j*.12)}if($('complexity').value==='lively'&&steps>5){add(steps-3,'kick',.45);add(steps-1,'hat',.36)}song.patterns.push(arr)}
+}
+function updateStyleText(){const label=STYLE_PRESETS[song.style]?.label||song.style;$('activeStyle').textContent=`Stil: ${label} · echte Samples`}
+function renderBeatDots(active=-1){const meter=valueAt(song.timeSigMap,Math.max(1,playMeasure+1),'meter')||song.timeSignature,[n]=meter.split('/').map(Number);$('beatDots').innerHTML=Array.from({length:n},(_,i)=>`<i class="${i===active?'on':''}"></i>`).join('')}
+async function initAudio(){if(audioCtx)return;audioCtx=new(AudioContext||webkitAudioContext)();masterNode=audioCtx.createGain();compressorNode=audioCtx.createDynamicsCompressor();compressorNode.threshold.value=-16;compressorNode.knee.value=18;compressorNode.ratio.value=5;compressorNode.attack.value=.005;compressorNode.release.value=.16;masterNode.connect(compressorNode);compressorNode.connect(audioCtx.destination);const len=audioCtx.sampleRate*.8,imp=audioCtx.createBuffer(2,len,audioCtx.sampleRate);for(let c=0;c<2;c++){const x=imp.getChannelData(c);for(let i=0;i<len;i++)x[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.8)}reverbNode=audioCtx.createConvolver();reverbNode.buffer=imp;reverbNode.connect(compressorNode)}
+const SAMPLE_URLS={kick:['https://raw.githubusercontent.com/GoogleChromeLabs/web-audio-samples/main/src/sounds/drum-samples/Kit3/kick.wav','https://raw.githubusercontent.com/GoogleChromeLabs/web-audio-samples/main/src/sounds/drum-samples/Kit8/kick.wav','https://cdn.jsdelivr.net/gh/W-Mai/Drumit@main/public/samples/kick.ogg'],snare:['https://raw.githubusercontent.com/GoogleChromeLabs/web-audio-samples/main/src/sounds/drum-samples/Kit3/snare.wav','https://raw.githubusercontent.com/GoogleChromeLabs/web-audio-samples/main/src/sounds/drum-samples/Kit8/snare.wav','https://cdn.jsdelivr.net/gh/W-Mai/Drumit@main/public/samples/snare.ogg'],hat:['https://raw.githubusercontent.com/GoogleChromeLabs/web-audio-samples/main/src/sounds/drum-samples/Kit3/hihat.wav','https://raw.githubusercontent.com/GoogleChromeLabs/web-audio-samples/main/src/sounds/drum-samples/Kit8/hihat.wav','https://cdn.jsdelivr.net/gh/W-Mai/Drumit@main/public/samples/hihat-closed.ogg'],tom:['https://raw.githubusercontent.com/GoogleChromeLabs/web-audio-samples/main/src/sounds/drum-samples/Kit8/tom1.wav','https://raw.githubusercontent.com/GoogleChromeLabs/web-audio-samples/main/src/sounds/drum-samples/Kit8/tom2.wav','https://cdn.jsdelivr.net/gh/W-Mai/Drumit@main/public/samples/floor-tom.ogg'],ride:['https://cdn.jsdelivr.net/gh/W-Mai/Drumit@main/public/samples/ride.ogg','https://cdn.jsdelivr.net/gh/W-Mai/Drumit@main/public/samples/ride-bell.ogg'],crash:['https://cdn.jsdelivr.net/gh/W-Mai/Drumit@main/public/samples/crash-left.ogg','https://cdn.jsdelivr.net/gh/W-Mai/Drumit@main/public/samples/crash-right.ogg']};
+async function loadDefaultSamples(){if(samplesLoading)return samplesLoading;samplesLoading=(async()=>{await initAudio();$('sampleStatus').textContent='Lade echte Drum-Samples …';let ok=0,total=0;await Promise.all(Object.entries(SAMPLE_URLS).flatMap(([inst,urls])=>urls.map(async url=>{total++;try{const r=await fetch(url);if(!r.ok)throw Error(r.status);const b=await audioCtx.decodeAudioData(await r.arrayBuffer());sampleBank[inst].push(b);ok++}catch(e){console.warn('Sample nicht geladen',url,e)}})));$('sampleStatus').textContent=ok?`${ok}/${total} echte Samples aktiv · Velocity-Layer + Round Robin`:'Sample-CDN nicht erreichbar · Synth-Fallback aktiv; eigene Samples können geladen werden.';return ok})().catch(e=>{console.error(e);$('sampleStatus').textContent='Sample-Fallback aktiv.';return 0});return samplesLoading}
+async function loadUserSamples(files){await initAudio();let ok=0;for(const f of files){const n=f.name.toLowerCase(),inst=/kick|bd/.test(n)?'kick':/snare|sd/.test(n)?'snare':/hihat|hi-hat|hat|hh/.test(n)?'hat':/tom/.test(n)?'tom':/ride/.test(n)?'ride':/crash|cymbal/.test(n)?'crash':null;if(!inst)continue;try{sampleBank[inst].push(await audioCtx.decodeAudioData(await f.arrayBuffer()));ok++}catch(e){console.warn(e)}}$('sampleStatus').textContent=ok?`${ok} eigene Samples ergänzt · Round Robin aktiv`:'Keine zuordenbaren Audiodateien gefunden.';toast($('sampleStatus').textContent)}
+function outputGain(inst){return(inst==='kick'?+$('volKick').value:inst==='snare'||inst==='tom'?+$('volSnare').value:+$('volCym').value)/100}
+function playSample(inst,vel,when){const pool=sampleBank[inst]||[],v=clamp(vel,0,1),layer=v<.38?'soft':v<.72?'medium':'hard',key=inst+layer;roundRobin[key]=(roundRobin[key]||0)+1;if(!pool.length){playSynth(inst,v*outputGain(inst),when);return}const src=audioCtx.createBufferSource(),g=audioCtx.createGain(),filter=audioCtx.createBiquadFilter(),pan=audioCtx.createStereoPanner();src.buffer=pool[roundRobin[key]%pool.length];src.playbackRate.value=(layer==='soft'?.965:layer==='hard'?1.025:1)*(1+(Math.random()-.5)*.018);filter.type='lowpass';filter.frequency.value=layer==='soft'?7500:layer==='hard'?18000:12000;g.gain.setValueAtTime(v*outputGain(inst),when);pan.pan.value=(Math.random()-.5)*.16;src.connect(filter);filter.connect(g);g.connect(pan);pan.connect(masterNode);const wet=audioCtx.createGain();wet.gain.value=(+$('room').value/100)*.32*v;g.connect(wet);wet.connect(reverbNode);src.start(when)}
+function playSynth(inst,v,t){if(inst==='kick'){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(42,t+.13);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+.28);o.connect(g);g.connect(masterNode);o.start(t);o.stop(t+.3);return}const len=audioCtx.sampleRate*(inst==='crash'||inst==='ride'?.8:.16),buf=audioCtx.createBuffer(1,len,audioCtx.sampleRate),x=buf.getChannelData(0);for(let i=0;i<len;i++)x[i]=Math.random()*2-1;const s=audioCtx.createBufferSource(),f=audioCtx.createBiquadFilter(),g=audioCtx.createGain();s.buffer=buf;f.type=inst==='snare'||inst==='tom'?'bandpass':'highpass';f.frequency.value=inst==='snare'?1500:inst==='tom'?480:6000;g.gain.setValueAtTime(v*.55,t);g.gain.exponentialRampToValueAtTime(.001,t+(inst==='crash'||inst==='ride'?.8:.16));s.connect(f);f.connect(g);g.connect(masterNode);s.start(t)}
+function playClick(high,t){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=high?1300:900;g.gain.setValueAtTime(.28,t);g.gain.exponentialRampToValueAtTime(.001,t+.035);o.connect(g);g.connect(masterNode);o.start(t);o.stop(t+.04)}
+function tempoAt(m){let bpm=valueAt(song.tempoMap,m,'bpm')||song.bpm;if($('ritEnabled').checked){const bars=+$('ritBars').value,start=Math.max(1,song.totalMeasures-bars+1);if(m>=start){const p=(m-start+playStep/Math.max(1,song.patterns[m-1]?.length||1))/bars,target=clamp(+$('ritTo').value,35,95)/100;bpm*=1-(1-target)*clamp(p,0,1)}}return bpm}
+function stepDuration(m){const meter=valueAt(song.timeSigMap,m,'meter'),den=+meter.split('/')[1],bpm=tempoAt(m);return 60/bpm*(den===8?1/3:1/2)}
+async function startPlayback(){await initAudio();loadDefaultSamples();if(audioCtx.state==='suspended')await audioCtx.resume();if(!song.patterns.length)buildArrangement();isPlaying=true;$('playBtn').textContent='■';$('playBtn').classList.add('playing');$('statusBadge').textContent='Vorzählen';playMeasure=clamp(+$('startMeasure').value||1,1,song.totalMeasures)-1;playStep=0;const meter=valueAt(song.timeSigMap,playMeasure+1,'meter'),[n,d]=meter.split('/').map(Number);countInSteps=meterSteps(meter);nextNoteTime=audioCtx.currentTime+.07;schedulerTimer=setInterval(schedule,25);schedule()}
+function schedule(){while(isPlaying&&nextNoteTime<audioCtx.currentTime+.14){const m=playMeasure+1,meter=valueAt(song.timeSigMap,m,'meter'),steps=song.patterns[playMeasure]?.length||meterSteps(meter),dur=stepDuration(m);if(countInSteps>0){const idx=steps-countInSteps,beatUnit=meter.endsWith('/8')?3:2;if(idx%beatUnit===0)playClick(idx===0,nextNoteTime);queueUI(m,idx,steps,true,nextNoteTime);countInSteps--;nextNoteTime+=dur;continue}const events=song.patterns[playMeasure]?.[playStep]||[],human=+$('humanize').value/100,dyn=+$('dynamics').value/100,swing=+$('swing').value/100,ghost=+$('ghostNotes').value/100,isOff=playStep%2===1,offset=isOff*swing*dur*.32+(Math.random()-.5)*.022*human;events.forEach(e=>playSample(e.inst,clamp(e.vel*(1+(Math.random()-.5)*.28*dyn),.03,1),Math.max(audioCtx.currentTime,nextNoteTime+offset)));if(ghost>.05&&playStep%2===1&&Math.random()<ghost*.18)playSample('snare',.13,nextNoteTime+offset);queueUI(m,playStep,steps,false,nextNoteTime);playStep++;nextNoteTime+=dur;if(playStep>=steps){playStep=0;playMeasure++;if(playMeasure>=song.totalMeasures){setTimeout(()=>stopPlayback(true),Math.max(0,(nextNoteTime-audioCtx.currentTime)*1000+350));break}}}}
+function queueUI(m,step,steps,counting,when){const delay=Math.max(0,(when-audioCtx.currentTime)*1000);setTimeout(()=>{if(!isPlaying)return;const meter=valueAt(song.timeSigMap,m,'meter'),den=+meter.split('/')[1],beatUnit=den===8?1:2,beat=Math.floor(step/beatUnit);renderBeatDots(beat);$('currentMeasure').textContent=m;$('liveTempo').textContent=`${Math.round(tempoAt(m))} BPM · ${meter}`;$('progressBar').style.width=(m/song.totalMeasures*100)+'%';$('statusBadge').textContent=counting?'Vorzählen':SECTION_LABELS[sectionAt(m)]||'Live'},delay)}
+function stopPlayback(finished=false){isPlaying=false;if(schedulerTimer)clearInterval(schedulerTimer);schedulerTimer=null;$('playBtn').textContent='▶';$('playBtn').classList.remove('playing');$('statusBadge').textContent=finished?'Song beendet':'Gestoppt';renderBeatDots();if(finished)$('progressBar').style.width='100%'}
+function resetApp(){stopPlayback();pendingAnalysis=null;$('metaModal').classList.add('hidden');$('loadingView').classList.add('hidden');$('playerView').classList.add('hidden');$('dropZone').classList.remove('hidden');$('resetBtn').classList.add('hidden');$('fileInput').value='';$('progressBar').style.width='0%'}
+init();
+</script>
 </body>
 </html>
